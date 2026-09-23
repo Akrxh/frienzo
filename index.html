@@ -252,4 +252,276 @@ async function update(changes,opts={}){
     const auto=opts.system&&(k==='lastReset'||/^students\/[^/]+\/status$/.test(k));
     if(!(admin||own||auto)){toast('Only the admin can make this change');return}
   }
-  for(const [p,v] of Object.entrie
+  for(const [p,v] of Object.entries(changes)){
+    const parts=p.split('/');let o=state;
+    parts.slice(0,-1).forEach(k=>{o=o[k]=o[k]||{}});
+    const last=parts[parts.length-1];
+    if(v===null)delete o[last];else o[last]=v;
+  }
+  saveLocal();render();
+  if(dbUrl){try{await remote('','PATCH',changes);setSync('ok')}catch{setSync('err');toast('Could not reach the database')}}
+}
+async function pull(){
+  if(!dbUrl)return;
+  try{
+    const raw=await remote('','GET');const s=JSON.stringify(raw);setSync('ok');
+    if(s===lastRaw)return;lastRaw=s;
+    state={students:(raw&&raw.students)||{},lastReset:(raw&&raw.lastReset)||''};
+    saveLocal();render();checkReset();
+  }catch{setSync('err')}
+}
+function setSync(s){
+  $('syncDot').className='sd '+(dbUrl?(s==='ok'?'on':s==='err'?'err':''):'');
+  $('syncTxt').textContent=dbUrl?(s==='ok'?'Live':s==='err'?'Offline':'Connecting'):'This device';
+}
+function startPoll(){clearInterval(pollTimer);lastRaw='';if(dbUrl){setSync();pull();pollTimer=setInterval(pull,POLL_MS)}else{setSync()}}
+
+/* ---------- Reset engine ---------- */
+const pad2=n=>String(n).padStart(2,'0');
+const dkey=d=>d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+function lastBoundary(now=new Date()){
+  const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),RESET_HOUR);
+  if(d>now)d.setDate(d.getDate()-1);
+  while(d.getDay()===0)d.setDate(d.getDate()-1);
+  return d;
+}
+function targetDay(now=new Date()){
+  const d=lastBoundary(now);d.setDate(d.getDate()+1);
+  if(d.getDay()===0)d.setDate(d.getDate()+1);
+  return d;
+}
+function nextReset(now=new Date()){
+  const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),RESET_HOUR);
+  if(d<=now)d.setDate(d.getDate()+1);
+  while(d.getDay()===0)d.setDate(d.getDate()+1);
+  return d;
+}
+async function checkReset(){
+  const key=dkey(lastBoundary());
+  if(state.lastReset===key)return;
+  const ch={lastReset:key};
+  Object.entries(state.students).forEach(([id,s])=>{if(s.status!=='pending')ch['students/'+id+'/status']='pending'});
+  await update(ch,{system:true});
+}
+
+/* ---------- Render ---------- */
+function render(){
+  if(me&&!state.students[me]){me=null;ls.set('as_me',null)}
+  const list=Object.entries(state.students).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
+  const t=targetDay();
+  $('dayName').textContent=t.toLocaleDateString(undefined,{weekday:'long'});
+  $('dayDate').textContent=t.toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'});
+
+  const c={going:0,pending:0,out:0};
+  list.forEach(([,s])=>{c[ST[s.status]?s.status:'pending']++});
+  const total=list.length;
+  $('bar').innerHTML=total
+    ?Object.keys(c).filter(k=>c[k]).map(k=>`<span class="seg ${k}" style="flex:${c[k]}"></span>`).join('')
+    :'<span class="seg empty" style="flex:1"></span>';
+  $('counts').innerHTML=Object.keys(ST).map(k=>`<div class="stat"><span class="n ${k}">${c[k]}</span><span class="l">${ST[k].label}</span></div>`).join('');
+
+  renderSession();
+
+  $('rosterCount').textContent=total+(total===1?' student':' students');
+  $('roster').innerHTML=total?list.map(([id,s])=>{
+    const st=ST[s.status]?s.status:'pending';
+    return `<button class="row ${st}${id===me?' me':''}" data-id="${esc(id)}" type="button">
+      <span class="av" style="background:${avColor(id)}">${esc(initials(s.name))}</span>
+      <span class="rt"><span class="nm">${esc(s.name||'Student')}</span>${id===me?'<span class="sb">You</span>':''}</span>
+      <span class="chip ${st}"><i class="fa-solid ${ST[st].icon}"></i>${ST[st].label}</span></button>`;
+  }).join(''):'<p class="empty-note">No students yet. Your admin will add the class roster.</p>';
+
+  const nr=nextReset();
+  $('resetInfo').textContent='Statuses return to Pending every day at 2:00 PM except Sunday. Next reset: '+nr.toLocaleDateString(undefined,{weekday:'long'})+' at 2:00 PM.';
+  if(admin&&!editing)renderAdmin();
+}
+
+function renderSession(){
+  const el=$('session');
+  const key=me||'';
+  if(sessionKey!==key){
+    sessionKey=key;
+    if(!me){
+      el.innerHTML='<div class="invite"><i class="fa-regular fa-hand-pointer"></i><div class="wt"><span class="nm">Find your name below</span><span class="sb">Tap it and type your password to set your status.</span></div></div>';
+    }else{
+      const s=state.students[me];
+      el.innerHTML=`<div class="who"><span class="av lg" style="background:${avColor(me)}">${esc(initials(s.name))}</span>
+        <div class="wt"><span class="nm">${esc(s.name)}</span><span class="sb">Choose your status for the day</span></div>
+        <button id="signOut" class="ghost-sm" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i>Sign out</button></div>
+        <div class="seg3" id="seg3"><span class="thumb"></span>${Object.keys(ST).map(k=>`<button type="button" data-s="${k}"><i class="fa-solid ${ST[k].icon}"></i>${ST[k].label}</button>`).join('')}</div>`;
+      $('signOut').onclick=()=>{me=null;ls.set('as_me',null);render();toast('Signed out')};
+      $('seg3').onclick=e=>{const b=e.target.closest('button[data-s]');if(b&&me)update({['students/'+me+'/status']:b.dataset.s})};
+    }
+  }
+  if(me){
+    const v=ST[(state.students[me]||{}).status]?state.students[me].status:'pending';
+    const sg=$('seg3');if(sg){sg.dataset.v=v;sg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===v))}
+  }
+}
+
+$('roster').onclick=e=>{
+  const b=e.target.closest('.row');if(!b)return;
+  if(b.dataset.id===me)return;
+  openPin(b.dataset.id);
+};
+
+/* ---------- Student password (keyboard) ---------- */
+function lockLeft(key){const t=tries[key];return t&&t.until>Date.now()?Math.ceil((t.until-Date.now())/1000):0}
+function fail(key){const t=tries[key]=tries[key]||{n:0,until:0};t.n++;if(t.n>=MAX_TRIES){t.n=0;t.until=Date.now()+LOCK_MS}}
+function paintPin(){
+  const v=$('pinInput').value;
+  document.querySelectorAll('#pinWrap .pd').forEach((d,i)=>{d.classList.toggle('f',i<v.length);d.classList.toggle('cur',i===Math.min(v.length,3)&&document.activeElement===$('pinInput'))});
+}
+function openPin(id){
+  const s=state.students[id];if(!s)return;
+  if(!s.pin){toast('No password set yet. Ask your admin.');return}
+  const w=lockLeft('s'+id);
+  pinTarget=id;
+  $('pinAv').textContent=initials(s.name);$('pinAv').style.background=avColor(id);
+  $('pinName').textContent=s.name;
+  $('pinMsg').textContent=w?'Too many tries. Wait '+w+' seconds.':'Type your 4-digit password';
+  $('pinMsg').style.color='';
+  $('pinInput').value='';paintPin();
+  openModal('pinModal');
+  const i=$('pinInput');i.focus();setTimeout(()=>{if(pinTarget===id)i.focus()},60);
+}
+$('pinWrap').onclick=()=>$('pinInput').focus();
+$('pinInput').addEventListener('focus',paintPin);
+$('pinInput').addEventListener('blur',paintPin);
+$('pinInput').addEventListener('input',()=>{
+  const i=$('pinInput');i.value=i.value.replace(/\D/g,'').slice(0,4);paintPin();
+  if(i.value.length===4)verifyPin(i.value);
+});
+$('pinCancel').onclick=()=>closeModal('pinModal');
+let verifying=false;
+async function verifyPin(pin){
+  if(verifying||!pinTarget)return;
+  const id=pinTarget,s=state.students[id];if(!s)return;
+  const w=lockLeft('s'+id);
+  if(w){$('pinMsg').textContent='Too many tries. Wait '+w+' seconds.';$('pinMsg').style.color='var(--ou)';$('pinInput').value='';paintPin();return}
+  verifying=true;
+  const ok=(await pinHash(id,pin))===s.pin;
+  verifying=false;
+  if(pinTarget!==id)return;
+  if(ok){
+    delete tries['s'+id];me=id;ls.set('as_me',me);
+    closeModal('pinModal');render();toast('Welcome, '+s.name.split(' ')[0]);
+  }else{
+    fail('s'+id);
+    const box=$('pinWrap');box.classList.remove('shake');void box.offsetWidth;box.classList.add('shake');
+    $('pinMsg').textContent=lockLeft('s'+id)?'Too many tries. Wait 30 seconds.':'Wrong password. Try again.';
+    $('pinMsg').style.color='var(--ou)';
+    $('pinInput').value='';paintPin();
+    if(navigator.vibrate)navigator.vibrate(120);
+  }
+}
+
+/* ---------- Admin (hidden) ---------- */
+function openAdmin(){lockAdmin();openModal('adminModal');setTimeout(()=>$('adminPass').focus(),50)}
+let taps=0,tapT;
+$('logo').onclick=()=>{taps++;clearTimeout(tapT);tapT=setTimeout(()=>taps=0,1500);if(taps>=5){taps=0;openAdmin()}};
+if(location.hash==='#admin'){history.replaceState(null,'',location.pathname+location.search);setTimeout(openAdmin,0)}
+
+function lockAdmin(){
+  admin=false;clearTimeout(adminTimer);adminTimer=null;editing=null;removing=null;
+  $('adminGate').classList.remove('hidden');$('adminPanel').classList.add('hidden');
+  $('adminPass').value='';$('adminErr').classList.add('hidden');
+  $('adminList').innerHTML='';
+}
+function bumpAdminTimer(){
+  if(!admin)return;clearTimeout(adminTimer);
+  adminTimer=setTimeout(()=>{$('adminModal').classList.remove('show');lockAdmin();toast('Admin locked')},ADMIN_TIMEOUT_MS);
+}
+$('adminModal').addEventListener('click',bumpAdminTimer);
+$('adminModal').addEventListener('keydown',bumpAdminTimer);
+$('adminExit').onclick=()=>closeModal('adminModal');
+async function tryAdmin(){
+  const w=lockLeft('admin'),err=$('adminErr');
+  if(w){err.textContent='Too many tries. Wait '+w+' seconds.';err.classList.remove('hidden');return}
+  const h=await sha($('adminPass').value);
+  if(h===ADMIN_HASH){
+    delete tries.admin;admin=true;
+    $('adminGate').classList.add('hidden');$('adminPanel').classList.remove('hidden');
+    $('adminPass').value='';err.classList.add('hidden');
+    $('dbUrl').value=dbUrl;renderAdmin();bumpAdminTimer();
+  }else{
+    fail('admin');
+    err.textContent=lockLeft('admin')?'Too many tries. Wait 30 seconds.':'Incorrect passcode';
+    err.classList.remove('hidden');$('adminPass').value='';
+  }
+}
+$('adminGo').onclick=tryAdmin;
+$('adminPass').addEventListener('keydown',e=>{if(e.key==='Enter')tryAdmin()});
+
+function renderAdmin(){
+  const list=Object.entries(state.students).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
+  $('adminCount').textContent=list.length;
+  $('adminList').innerHTML=list.length?list.map(([id,s])=>`
+    <div><div class="arow">
+      <span class="av" style="background:${avColor(id)}">${esc(initials(s.name))}</span>
+      <span class="nm">${esc(s.name||'Student')}</span>
+      <button class="act" data-a="pw" data-id="${esc(id)}" type="button" aria-label="Change password"><i class="fa-solid fa-key"></i></button>
+      <button class="act rm${removing===id?' sure':''}" data-a="rm" data-id="${esc(id)}" type="button" aria-label="Remove student">${removing===id?'Sure?':'<i class="fa-solid fa-trash"></i>'}</button>
+    </div>${editing===id?`<div class="aedit"><input class="inp" id="editPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="New 4-digit password" autocomplete="new-password"><button class="btn" data-a="savepw" data-id="${esc(id)}" type="button">Save</button></div>`:''}</div>`).join('')
+    :'<p class="text-slate-500 text-sm text-center py-3">No students yet.</p>';
+  if(editing){const e=$('editPin');if(e)e.focus()}
+}
+$('adminList').onclick=async e=>{
+  const b=e.target.closest('[data-a]');if(!b||!admin)return;
+  const id=b.dataset.id,a=b.dataset.a;
+  if(a==='pw'){editing=editing===id?null:id;renderAdmin()}
+  else if(a==='savepw'){
+    const v=$('editPin').value;
+    if(!/^\d{4}$/.test(v)){toast('Password must be 4 digits');return}
+    const h=await pinHash(id,v);editing=null;
+    await update({['students/'+id+'/pin']:h});toast('Password updated');
+  }else if(a==='rm'){
+    if(removing===id){removing=null;if(me===id){me=null;ls.set('as_me',null)}await update({['students/'+id]:null});toast('Student removed')}
+    else{removing=id;renderAdmin();clearTimeout(renderAdmin.t);renderAdmin.t=setTimeout(()=>{removing=null;if(admin)renderAdmin()},3000)}
+  }
+};
+$('addBtn').onclick=async()=>{
+  const name=$('addName').value.trim(),pin=$('addPin').value;
+  if(!name){toast('Enter a name');return}
+  if(!/^\d{4}$/.test(pin)){toast('Password must be 4 digits');return}
+  if(Object.values(state.students).some(s=>String(s.name).toLowerCase()===name.toLowerCase())){toast('That name is already on the roster');return}
+  const id=uid();
+  await update({['students/'+id]:{name,pin:await pinHash(id,pin),status:'pending'}});
+  $('addName').value='';$('addPin').value='';toast(name+' added');
+};
+$('addPin').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)});
+$('addPin').addEventListener('keydown',e=>{if(e.key==='Enter')$('addBtn').click()});
+
+/* Sync (open to everyone) */
+function syncErr(m){const e=$('syncErr');e.textContent=m||'';e.classList.toggle('hidden',!m)}
+$('syncBtn').onclick=()=>{$('dbUrl').value=dbUrl;syncErr('');openModal('syncModal');setTimeout(()=>$('dbUrl').focus(),50)};
+$('syncSave').onclick=async()=>{
+  let u=$('dbUrl').value.trim().replace(/\/+$/,'');
+  if(u&&!/^https?:\/\//i.test(u))u='https://'+u;
+  if(!/^https:\/\/.+\..+/i.test(u)){syncErr('Enter a valid database URL, like https://your-project-default-rtdb.firebaseio.com');return}
+  syncErr('');$('syncSave').disabled=true;$('syncSave').textContent='Connecting…';
+  try{
+    const raw=await remote('','GET',undefined,u);
+    if((!raw||!raw.students)&&Object.keys(state.students).length)await remote('','PUT',state,u);
+    dbUrl=u;ls.set('as_db',u);startPoll();closeModal('syncModal');toast('Connected');
+  }catch(err){
+    const m=String(err&&err.message||'');
+    syncErr(/HTTP (401|403)/.test(m)?'Firebase refused access (error '+m.slice(5)+'). Open Realtime Database > Rules and allow read and write on attendance, then publish.'
+      :/HTTP 404/.test(m)?'Database not found (404). Copy the URL from the top of the Realtime Database Data tab, not the console page address.'
+      :/HTTP/.test(m)?'Firebase returned an error ('+m+').'
+      :'Could not reach the URL. Check for typos and your internet connection. The URL should end in firebaseio.com or firebasedatabase.app.');
+  }
+  $('syncSave').disabled=false;$('syncSave').textContent='Connect';
+};
+$('dbUrl').addEventListener('keydown',e=>{if(e.key==='Enter')$('syncSave').click()});
+$('syncOff').onclick=()=>{dbUrl='';ls.set('as_db','');$('dbUrl').value='';clearInterval(pollTimer);lastRaw='';setSync();syncErr('');closeModal('syncModal');toast('Using this device only')};
+
+/* ---------- Init ---------- */
+render();
+checkReset();
+startPoll();
+setInterval(checkReset,30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkReset();pull()}});
+</script>
+</body>
+</html>
