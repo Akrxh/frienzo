@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "attendance": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
