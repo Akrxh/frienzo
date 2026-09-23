@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#06080e">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AttendanceSync</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#06080e;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.15);--tx:#eef1f8;--mu:#8b95a9;--go:#3ddc97;--pe:#f5c451;--ou:#ff6b7a;--gold:#d8b978}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;overflow-x:hidden}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;color:var(--tx);background:var(--ink);
+background-image:
+  radial-gradient(1100px 620px at 8% -12%,rgba(96,132,255,.16),transparent 60%),
+  radial-gradient(800px 560px at 110% 0%,rgba(216,185,120,.09),transparent 60%),
+  radial-gradient(600px 500px at 50% 120%,rgba(61,220,151,.06),transparent 60%);
+background-attachment:fixed;
+padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{position:relative;max-width:32rem;margin:0 auto;padding:1.35rem 1.1rem 3rem}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.mark{display:flex;align-items:center;gap:.65rem;font-weight:800;font-size:.98rem;letter-spacing:-.01em;user-select:none;-webkit-user-select:none;cursor:default;background:none;border:0;color:var(--tx);padding:.3rem 0;font-family:inherit}
+.mark i{width:.64rem;height:.64rem;border-radius:2px;transform:rotate(45deg);background:linear-gradient(135deg,var(--go),var(--pe),var(--ou));box-shadow:0 0 16px rgba(245,196,81,.35)}
+.pill{display:flex;align-items:center;gap:.5rem;padding:.45rem .85rem;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--mu);font:600 .74rem Manrope,sans-serif}
+.sd{width:.5rem;height:.5rem;border-radius:50%;background:#4c5468;transition:.2s}
+.sd.on{background:var(--go);box-shadow:0 0 10px var(--go)}
+.sd.err{background:var(--ou);box-shadow:0 0 10px var(--ou)}
+.hero{padding:2.6rem 0 1.9rem;animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
+.kicker{margin:0;color:var(--mu);font-size:.85rem;letter-spacing:.02em}
+.day{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(3.4rem,17vw,5.6rem);line-height:.94;letter-spacing:-.02em;margin:.32rem 0 .45rem;background:linear-gradient(180deg,#fff 20%,#aab3c8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.date{margin:0;color:var(--mu);font-size:.95rem}
+.bar{display:flex;gap:3px;height:.5rem;margin-top:1.8rem;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.04)}
+.seg{display:block;border-radius:999px;min-width:6px;transition:flex .5s cubic-bezier(.3,.9,.3,1)}
+.seg.going{background:linear-gradient(90deg,#2fc384,var(--go))}
+.seg.pending{background:linear-gradient(90deg,#e0af3f,var(--pe))}
+.seg.out{background:linear-gradient(90deg,#e85567,var(--ou))}
+.seg.empty{background:rgba(255,255,255,.08)}
+.stats{display:flex;gap:1.7rem;margin-top:1rem}
+.stat{display:flex;align-items:baseline;gap:.42rem}
+.n{font-family:'Instrument Serif',Georgia,serif;font-size:2rem;line-height:1}
+.n.going{color:var(--go)}.n.pending{color:var(--pe)}.n.out{color:var(--ou)}
+.l{font-size:.78rem;color:var(--mu)}
+.card{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.018));border:1px solid var(--line);border-radius:1.6rem;padding:1.15rem;margin-bottom:1rem;-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);box-shadow:0 30px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.09)}
+.card::after{content:"";position:absolute;left:12%;right:12%;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(216,185,120,.55),transparent)}
+.who,.invite{display:flex;align-items:center;gap:.8rem}
+.who{margin-bottom:1.05rem}
+.invite{padding:.35rem .2rem}
+.invite i{font-size:1.5rem;color:var(--gold)}
+.av{width:2.5rem;height:2.5rem;flex-shrink:0;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#e9edf7;border:1px solid var(--line2);font-size:.88rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.av.lg{width:3.1rem;height:3.1rem;font-size:1rem;box-shadow:0 8px 22px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+.wt,.rt{flex:1;min-width:0}
+.nm{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb{display:block;color:var(--mu);font-size:.78rem;margin-top:1px}
+.ghost-sm{flex-shrink:0;display:flex;align-items:center;gap:.4rem;padding:.55rem .8rem;border-radius:.8rem;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--tx);font:600 .75rem Manrope,sans-serif;cursor:pointer;transition:background .2s}
+.ghost-sm:hover{background:rgba(255,255,255,.09)}
+.seg3{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:4px;border-radius:1.1rem;background:rgba(0,0,0,.42);border:1px solid var(--line)}
+.seg3 button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:.32rem;padding:.88rem .2rem;background:none;border:0;color:var(--mu);font:600 .8rem Manrope,sans-serif;cursor:pointer;transition:color .25s}
+.seg3 button i{font-size:1.15rem}
+.seg3 button.on{color:#0a0d14}
+.thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/3);border-radius:.85rem;transition:transform .4s cubic-bezier(.32,1.15,.4,1),background .3s,box-shadow .3s}
+.seg3[data-v=going] .thumb{transform:translateX(0);background:var(--go);box-shadow:0 0 30px rgba(61,220,151,.45)}
+.seg3[data-v=pending] .thumb{transform:translateX(100%);background:var(--pe);box-shadow:0 0 30px rgba(245,196,81,.4)}
+.seg3[data-v=out] .thumb{transform:translateX(200%);background:var(--ou);box-shadow:0 0 30px rgba(255,107,122,.42)}
+.rh{padding:.2rem .3rem .9rem;display:flex;align-items:baseline;justify-content:space-between}
+.rh h2{margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:1.65rem}
+.rh span{color:var(--mu);font-size:.78rem}
+.row{position:relative;width:100%;display:flex;align-items:center;gap:.8rem;padding:.8rem .85rem .8rem 1.05rem;margin-bottom:.5rem;border-radius:1.1rem;border:1px solid var(--line);background:rgba(255,255,255,.03);color:inherit;text-align:left;font-family:inherit;cursor:pointer;overflow:hidden;transition:background .2s,transform .15s,border-color .2s}
+.row:hover{background:rgba(255,255,255,.065)}
+.row:active{transform:scale(.99)}
+.row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c)}
+.row.going{--c:var(--go)}.row.pending{--c:var(--pe)}.row.out{--c:var(--ou)}
+.row.me{border-color:rgba(216,185,120,.55);background:rgba(216,185,120,.07);cursor:default}
+.row.me .sb{color:var(--gold)}
+.chip{display:inline-flex;align-items:center;gap:.4rem;flex-shrink:0;white-space:nowrap;padding:.34rem .68rem;border-radius:999px;font-size:.72rem;font-weight:700;border:1px solid}
+.chip.going{color:var(--go);background:rgba(61,220,151,.12);border-color:rgba(61,220,151,.4)}
+.chip.pending{color:var(--pe);background:rgba(245,196,81,.12);border-color:rgba(245,196,81,.4)}
+.chip.out{color:var(--ou);background:rgba(255,107,122,.12);border-color:rgba(255,107,122,.4)}
+.empty-note{text-align:center;color:var(--mu);font-size:.85rem;padding:1.8rem .5rem;margin:0;line-height:1.5}
+.foot-note{text-align:center;color:#5d667a;font-size:.72rem;margin:1.6rem 0 0;line-height:1.5}
+.glass{background:rgba(12,16,25,.97);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:1px solid var(--line2);border-radius:1.6rem;box-shadow:0 40px 100px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.08)}
+.inp{width:100%;background:rgba(0,0,0,.38);border:1px solid var(--line);border-radius:.9rem;padding:.8rem .95rem;color:#fff;outline:none;font:500 1rem Manrope,sans-serif;transition:border-color .2s,box-shadow .2s}
+.inp:focus{border-color:rgba(216,185,120,.7);box-shadow:0 0 0 3px rgba(216,185,120,.12)}
+.btn{padding:.8rem 1.1rem;border-radius:.9rem;font:700 .9rem Manrope,sans-serif;background:linear-gradient(180deg,#fdfefe,#e2e7f0);color:#0a0d14;border:0;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.25);transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(0,0,0,.32)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn.ghost{background:rgba(255,255,255,.06);color:var(--tx);border:1px solid var(--line);box-shadow:none}
+/* PIN entry (native keyboard) */
+.pinwrap{position:relative;display:flex;justify-content:center;gap:.9rem;margin:1.4rem 0 .4rem;cursor:text}
+.pd{width:3.1rem;height:3.6rem;border-radius:1rem;border:1px solid var(--line2);background:rgba(0,0,0,.35);display:grid;place-items:center;transition:border-color .2s,box-shadow .2s,background .2s}
+.pd::after{content:"";width:.7rem;height:.7rem;border-radius:50%;background:#fff;box-shadow:0 0 14px rgba(255,255,255,.65);transform:scale(0);transition:transform .18s cubic-bezier(.3,1.6,.5,1)}
+.pd.f::after{transform:scale(1)}
+.pd.cur{border-color:rgba(216,185,120,.85);box-shadow:0 0 0 3px rgba(216,185,120,.14)}
+.pin-real{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;background:transparent;color:transparent;font-size:16px;caret-color:transparent;text-align:center}
+.shake{animation:sh .4s}
+@keyframes sh{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.modal{position:fixed;inset:0;background:rgba(3,5,10,.76);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:1rem;z-index:50}
+.modal.top{align-items:flex-start;padding-top:max(8vh,env(safe-area-inset-top,0px))}
+.modal.show{display:flex}
+.modal>div{max-height:calc(100dvh - 2rem);overflow-y:auto}
+.arow{display:flex;align-items:center;gap:.6rem;padding:.6rem .65rem;border:1px solid var(--line);border-radius:.9rem;background:rgba(255,255,255,.03)}
+.arow .av{width:2.2rem;height:2.2rem;font-size:.82rem}
+.arow .nm{flex:1;min-width:0}
+.aedit{display:flex;gap:.5rem;margin-top:.5rem}
+.act{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:.4rem;min-width:2.9rem;height:2.9rem;padding:0 .8rem;border-radius:.8rem;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--tx);font:700 .8rem Manrope,sans-serif;cursor:pointer;touch-action:manipulation}
+.act.rm{border-color:rgba(255,107,122,.4);background:rgba(255,107,122,.12);color:var(--ou)}
+.act.rm.sure{background:var(--ou);color:#1a0508;border-color:var(--ou)}
+.box{padding:.85rem;border-radius:1.1rem;border:1px solid var(--line);background:rgba(255,255,255,.03);margin-bottom:1.1rem}
+button:focus-visible,.inp:focus-visible{outline:2px solid #8fb0ff;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <button id="logo" class="mark" type="button" tabindex="-1" aria-label="AttendanceSync"><i></i>AttendanceSync</button>
+    <button id="syncBtn" class="pill" type="button" aria-label="Sync settings"><span id="syncDot" class="sd"></span><span id="syncTxt">This device</span></button>
+  </header>
+
+  <section class="hero">
+    <p class="kicker">Attendance for</p>
+    <h1 id="dayName" class="day"></h1>
+    <p id="dayDate" class="date"></p>
+    <div id="bar" class="bar"></div>
+    <div id="counts" class="stats"></div>
+  </section>
+
+  <section id="session" class="card"></section>
+
+  <section class="card">
+    <div class="rh"><h2>Class roster</h2><span id="rosterCount"></span></div>
+    <div id="roster"></div>
+  </section>
+
+  <p id="resetInfo" class="foot-note"></p>
+</main>
+
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 glass px-4 py-2 text-sm text-center max-w-[90vw] hidden z-[60]"></div>
+
+<!-- Password modal: native numeric keyboard -->
+<div id="pinModal" class="modal top"><div class="glass p-6 w-full max-w-xs text-center">
+  <div id="pinAv" class="av lg mx-auto mb-3"></div>
+  <div id="pinName" class="font-semibold text-lg"></div>
+  <p id="pinMsg" class="text-slate-400 text-sm mt-1">Type your 4-digit password</p>
+  <div id="pinWrap" class="pinwrap">
+    <span class="pd"></span><span class="pd"></span><span class="pd"></span><span class="pd"></span>
+    <input id="pinInput" class="pin-real" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" enterkeyhint="done" aria-label="4-digit password">
+  </div>
+  <button id="pinCancel" class="text-slate-400 text-sm mt-4 p-2" type="button">Cancel</button>
+</div></div>
+
+<!-- Sync modal (open to everyone) -->
+<div id="syncModal" class="modal top"><div class="glass p-6 w-full max-w-md">
+  <h2 class="text-lg font-semibold mb-1">Device sync</h2>
+  <p class="text-slate-400 text-sm mb-4">Paste your Firebase Realtime Database URL so this device shows the same statuses as everyone else. Choose "This device only" to keep data on this phone.</p>
+  <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://your-project-default-rtdb.firebaseio.com" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <p id="syncErr" class="text-xs mt-2 hidden" style="color:var(--ou)"></p>
+  <p class="text-slate-500 text-xs mt-2">In Firebase, set the database rules to allow read and write on <code>attendance</code>.</p>
+  <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
+    <button id="syncClose" class="btn ghost" data-close="syncModal" type="button">Close</button>
+    <button id="syncOff" class="btn ghost" type="button">This device only</button>
+    <button id="syncSave" class="btn" type="button">Connect</button>
+  </div>
+</div></div>
+
+<!-- Admin modal (hidden entry) -->
+<div id="adminModal" class="modal"><div class="glass p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+  <div id="adminGate">
+    <h2 class="text-lg font-semibold mb-1">Admin access</h2>
+    <p class="text-slate-400 text-sm mb-4">Enter the admin passcode.</p>
+    <input id="adminPass" type="password" inputmode="numeric" class="inp" placeholder="Passcode" autocomplete="off">
+    <p id="adminErr" class="text-xs mt-2 hidden" style="color:var(--ou)"></p>
+    <div class="flex gap-2 mt-4 justify-end"><button class="btn ghost" data-close="adminModal" type="button">Cancel</button><button id="adminGo" class="btn" type="button">Unlock</button></div>
+  </div>
+  <div id="adminPanel" class="hidden">
+    <div class="flex justify-between items-center mb-4"><h2 class="text-lg font-semibold">Admin panel</h2><button id="adminExit" class="text-sm text-slate-400 underline p-2" type="button">Lock and exit</button></div>
+
+    <div class="box">
+      <p class="text-sm font-semibold mb-2">New student</p>
+      <input id="addName" class="inp mb-2" placeholder="Student name" maxlength="30" autocomplete="off">
+      <input id="addPin" class="inp mb-1" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4-digit password" autocomplete="new-password">
+      <p class="text-slate-500 text-xs mb-3">Only you can create students or change passwords. Give each student their password directly.</p>
+      <button id="addBtn" class="btn w-full" type="button">Add student</button>
+    </div>
+
+    <p class="text-slate-400 text-xs mb-2">Roster (<span id="adminCount">0</span>)</p>
+    <div id="adminList" class="space-y-2 mb-5"></div>
+
+    <button class="btn ghost w-full" data-close="adminModal" type="button">Done</button>
+  </div>
+</div></div>
+
+<script>
+const ADMIN_HASH='db644b9eda4129ff87717797efb283a1fbbfd2083f7974af509385c30ad15861';
+const DEFAULT_DB_URL=''; // optional: hardcode your Firebase URL so students connect without a link
+const RESET_HOUR=14, POLL_MS=3000, ADMIN_TIMEOUT_MS=5*60*1000, MAX_TRIES=5, LOCK_MS=30000;
+const AVATAR_BG=['#3f5088','#5d4a86','#3d6b6b','#7a4a5c','#4a6b3d','#6b5a3d','#3d5c7a','#6b3d5c'];
+const ST={going:{label:'Going',icon:'fa-circle-check'},pending:{label:'Pending',icon:'fa-hourglass-half'},out:{label:'Not going',icon:'fa-circle-xmark'}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls={get:(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const avColor=id=>{let h=0;for(const c of id)h=(h*31+c.charCodeAt(0))>>>0;return AVATAR_BG[h%AVATAR_BG.length]};
+const initials=n=>{const p=String(n||'?').trim().split(/\s+/);return ((p[0]||'?')[0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()};
+const uid=()=>'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+// Student link: ?db=<firebase url> connects this device, then the link is cleaned.
+(function(){try{const u=new URL(location.href),d=u.searchParams.get('db');if(d&&/^https:\/\//.test(d)){ls.set('as_db',d);u.searchParams.delete('db');history.replaceState(null,'',u.pathname+u.search+u.hash)}}catch{}})();
+
+let state=ls.get('as_data',{students:{},lastReset:''});
+state.students=state.students||{};
+let dbUrl=ls.get('as_db','')||DEFAULT_DB_URL;
+let me=ls.get('as_me',null);
+let admin=false, adminTimer=null, lastRaw='', pollTimer=null;
+let removing=null, editing=null, pinTarget=null, sessionKey=null;
+const tries={};
+
+async function sha(s){
+  if(window.crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+  let h=5381;for(const c of s)h=((h*33)^c.charCodeAt(0))>>>0;return 'x'+h.toString(16);
+}
+const pinHash=(id,pin)=>sha('pin:'+id+':'+pin);
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hidden'),2400)}
+function openModal(id){$(id).classList.add('show')}
+function closeModal(id){
+  $(id).classList.remove('show');
+  if(id==='adminModal')lockAdmin();
+  if(id==='pinModal'){pinTarget=null;$('pinInput').value='';$('pinInput').blur()}
+}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id)}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal.show').forEach(m=>closeModal(m.id))});
+
+/* ---------- Storage ---------- */
+const base=()=>dbUrl.replace(/\/$/,'')+'/attendance';
+async function remote(path,method,body,url){
+  const b=url?url.replace(/\/$/,'')+'/attendance':base();
+  const r=await fetch(b+path+'.json',{method,headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+function saveLocal(){ls.set('as_data',state)}
+async function update(changes,opts={}){
+  for(const k of Object.keys(changes)){
+    const own=/^students\/[^/]+\/status$/.test(k)&&k.split('/')[1]===me;
+    const auto=opts.system&&(k==='lastReset'||/^students\/[^/]+\/status$/.test(k));
+    if(!(admin||own||auto)){toast('Only the admin can make this change');return}
+  }
+  for(const [p,v] of Object.entrie
