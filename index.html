@@ -1,478 +1,426 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AttendanceSync</title>
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- FontAwesome Icons CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <!-- Firebase JavaScript SDK (Compat Version) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            iosDark: '#000000',
-            iosCard: 'rgba(255, 255, 255, 0.05)',
-            iosBorder: 'rgba(255, 255, 255, 0.15)',
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    /* Premium Black & White Backdrop */
-    body {
-      background: radial-gradient(circle at top, #1c1c1e 0%, #000000 80%);
-      min-height: 100vh;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    /* iOS Glassmorphism styling */
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    .glass-btn {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .glass-btn:hover {
-      background: rgba(255, 255, 255, 0.18);
-      border-color: rgba(255, 255, 255, 0.35);
-      transform: translateY(-1px);
-    }
-
-    .glass-btn:active {
-      transform: translateY(0px);
-      background: rgba(255, 255, 255, 0.25);
-    }
-
-    /* Active state for selection buttons */
-    .btn-active-attending {
-      background: rgba(255, 255, 255, 0.25) !important;
-      border-color: rgba(255, 255, 255, 0.8) !important;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AttendanceSync</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-database-compat.min.js"></script>
+<style>
+  :root{color-scheme:dark;box-sizing:border-box;}
+  *,*::before,*::after{box-sizing:inherit;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{background:#0f172a;background-image:radial-gradient(circle at 15% 10%, rgba(56,189,248,0.14), transparent 40%),radial-gradient(circle at 85% 20%, rgba(168,85,247,0.12), transparent 40%),radial-gradient(circle at 50% 90%, rgba(34,197,94,0.08), transparent 45%);font-family:'Inter',system-ui,sans-serif;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);min-height:100vh;}
+  .grid > button{min-width:0;}
+  .grid > button i{display:block;margin:0 0 2px;}
+  .grid{align-items:stretch;}
+  .glass{background:rgba(255,255,255,0.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);}
+  .glass-strong{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);}
+  .glow-green{box-shadow:0 0 14px rgba(34,197,94,0.55);}
+  .glow-red{box-shadow:0 0 14px rgba(239,68,68,0.55);}
+  .glow-yellow{box-shadow:0 0 14px rgba(234,179,8,0.55);}
+  .dot{width:.65rem;height:.65rem;border-radius:9999px;}
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:9999px;}
+  .modal-backdrop{background:rgba(3,7,18,0.7);backdrop-filter:blur(4px);}
+  .fade-in{animation:fadeIn .25s ease-out;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  input[type=password]::placeholder,input[type=text]::placeholder{color:rgba(255,255,255,0.35);}
+</style>
 </head>
-<body class="flex flex-col min-h-screen justify-between p-4 sm:p-6 max-w-lg mx-auto selection:bg-white selection:text-black">
+<body class="min-h-screen text-slate-100">
 
-  <!-- HEADER -->
-  <header class="flex justify-between items-center mb-6 pt-2">
+<div class="max-w-md mx-auto px-4 pt-8 pb-14">
+
+  <!-- Header -->
+  <header class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
-        <i class="fa-solid fa-graduation-cap text-white"></i> AttendanceSync
-      </h1>
-      <p class="text-xs text-neutral-400 mt-0.5">Daily Attendance Network</p>
+      <h1 class="text-2xl font-semibold tracking-tight">AttendanceSync</h1>
+      <p id="dateLabel" class="text-xs text-slate-400 mt-0.5">—</p>
     </div>
-    <button onclick="openModal('syncModal')" class="glass-btn px-3 py-1.5 rounded-full text-xs font-semibold text-neutral-200 flex items-center gap-2">
-      <i class="fa-solid fa-wifi text-neutral-300"></i>
-      <span id="syncStatusText">Syncing...</span>
+    <button onclick="openSyncModal()" class="glass w-10 h-10 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:border-sky-400/40 transition">
+      <i class="fa-solid fa-arrows-rotate"></i>
     </button>
   </header>
 
-  <!-- MAIN CONTENT AREA -->
-  <main class="flex-1 space-y-6">
+  <!-- Sync status pill -->
+  <div id="syncPill" class="flex items-center gap-2 text-xs text-slate-400 mb-5">
+    <span class="dot bg-slate-500"></span><span id="syncPillText">Local mode — not synced</span>
+  </div>
 
-    <!-- ACTIVE USER SESSION CARD -->
-    <section>
-      <div id="sessionCard" class="glass-panel rounded-3xl p-5 text-center shadow-2xl relative overflow-hidden">
-        <!-- Content rendered via JavaScript -->
-      </div>
-    </section>
+  <!-- Active Session Card -->
+  <section id="sessionCard" class="glass-strong rounded-2xl p-5 mb-6 fade-in"></section>
 
-    <!-- CLASS ROSTER LIST -->
-    <section>
-      <div class="flex justify-between items-center mb-3 px-1">
-        <h2 class="text-xs font-bold tracking-widest text-neutral-400 uppercase">Class Roster</h2>
-        <span id="rosterCount" class="text-xs text-neutral-500 font-mono">0 Members</span>
-      </div>
+  <!-- Roster -->
+  <section class="glass rounded-2xl p-4 mb-6">
+    <h2 class="text-sm font-medium text-slate-300 mb-3 px-1">Class Roster</h2>
+    <div id="roster" class="space-y-1.5"></div>
+  </section>
 
-      <div id="rosterList" class="space-y-2.5">
-        <!-- Roster items rendered via JavaScript -->
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="text-center py-6 border-t border-white/10 mt-6">
-    <button onclick="openModal('adminModal')" class="text-xs text-neutral-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 mx-auto">
-      <i class="fa-solid fa-shield-halved text-neutral-400"></i> Admin Panel
-    </button>
+  <!-- Footer -->
+  <footer class="text-center">
+    <button onclick="openAdminGate()" class="text-xs text-slate-500 hover:text-slate-300 transition">Admin Access</button>
   </footer>
+</div>
 
-  <!-- MODAL: PIN AUTHENTICATION -->
-  <div id="pinModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-    <div class="glass-panel w-full max-w-xs rounded-3xl p-6 text-center shadow-2xl">
-      <div class="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-3">
-        <i class="fa-solid fa-lock text-white text-lg"></i>
-      </div>
-      <h3 class="text-lg font-bold text-white mb-1" id="pinUserTitle">Enter Security PIN</h3>
-      <p class="text-xs text-neutral-400 mb-4">Enter your 4-digit passcode to unlock</p>
-      
-      <input type="password" id="pinInput" maxlength="4" placeholder="••••" 
-             class="w-full text-center text-3xl tracking-[0.4em] bg-black/60 border border-white/20 rounded-2xl py-3 text-white focus:outline-none focus:border-white mb-5 font-mono">
-      
-      <div class="flex gap-2">
-        <button onclick="closeModal('pinModal')" class="w-1/2 py-3 rounded-2xl border border-white/15 text-xs text-neutral-300 hover:bg-white/10">Cancel</button>
-        <button onclick="submitPin()" class="w-1/2 py-3 rounded-2xl bg-white text-black font-bold text-xs hover:bg-neutral-200">Unlock</button>
-      </div>
+<!-- PIN Modal -->
+<div id="pinModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 px-4">
+  <div class="glass-strong rounded-2xl p-6 w-full max-w-xs fade-in">
+    <h3 id="pinTitle" class="text-lg font-semibold mb-1">Enter PIN</h3>
+    <p class="text-xs text-slate-400 mb-4">4-digit PIN for <span id="pinStudentName" class="text-slate-200"></span></p>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="4" placeholder="••••" class="w-full text-center text-2xl tracking-[0.5em] bg-white/5 border border-white/10 rounded-xl py-3 mb-2 outline-none focus:border-sky-400/50">
+    <p id="pinError" class="text-xs text-red-400 h-4 mb-2"></p>
+    <div class="flex gap-2">
+      <button onclick="closeModal('pinModal')" class="flex-1 py-2.5 rounded-xl glass text-sm text-slate-300">Cancel</button>
+      <button onclick="submitPin()" class="flex-1 py-2.5 rounded-xl bg-sky-500/80 hover:bg-sky-500 text-sm font-medium">Unlock</button>
     </div>
   </div>
+</div>
 
-  <!-- MODAL: SYNC SETTINGS -->
-  <div id="syncModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-    <div class="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
-        <i class="fa-solid fa-database text-neutral-300"></i> Database Endpoint
-      </h3>
-      <p class="text-xs text-neutral-400 mb-4">Firebase Realtime Database URL for multi-device sync.</p>
-
-      <label class="block text-xs font-semibold text-neutral-300 mb-1">Database URL</label>
-      <input type="text" id="dbUrlInput" placeholder="https://..." 
-             class="w-full text-xs bg-black/60 border border-white/20 rounded-xl p-3 text-white focus:outline-none focus:border-white mb-4 font-mono">
-
-      <div class="flex gap-2">
-        <button onclick="closeModal('syncModal')" class="w-1/2 py-3 rounded-xl border border-white/15 text-xs text-neutral-300 hover:bg-white/10">Cancel</button>
-        <button onclick="saveSyncSettings()" class="w-1/2 py-3 rounded-xl bg-white text-black font-bold text-xs hover:bg-neutral-200">Save & Sync</button>
-      </div>
+<!-- Sync Modal -->
+<div id="syncModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 px-4">
+  <div class="glass-strong rounded-2xl p-6 w-full max-w-sm fade-in">
+    <h3 class="text-lg font-semibold mb-1">Sync Settings</h3>
+    <p class="text-xs text-slate-400 mb-4">Enter your Firebase Realtime Database URL to sync across devices. Leave blank to use local storage only.</p>
+    <input id="firebaseUrlInput" type="text" placeholder="https://your-project-default-rtdb.region.firebasedatabase.app/" class="w-full text-sm bg-white/5 border border-white/10 rounded-xl py-2.5 px-3 mb-3 outline-none focus:border-sky-400/50">
+    <p id="syncError" class="text-xs text-red-400 h-4 mb-1"></p>
+    <div class="flex gap-2 mt-2">
+      <button onclick="closeModal('syncModal')" class="flex-1 py-2.5 rounded-xl glass text-sm text-slate-300">Cancel</button>
+      <button onclick="saveFirebaseUrl()" class="flex-1 py-2.5 rounded-xl bg-sky-500/80 hover:bg-sky-500 text-sm font-medium">Connect</button>
     </div>
   </div>
+</div>
 
-  <!-- MODAL: ADMIN ACCESS -->
-  <div id="adminModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-    <div class="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      
-      <!-- Admin Verification View -->
-      <div id="adminAuthView">
-        <h3 class="text-lg font-bold text-white mb-1">Admin Verification</h3>
-        <p class="text-xs text-neutral-400 mb-4">Enter system passcode to manage users (Default: 1234)</p>
-        <input type="password" id="adminPassInput" placeholder="Passcode" 
-               class="w-full text-center text-lg bg-black/60 border border-white/20 rounded-xl py-3 text-white focus:outline-none focus:border-white mb-4 font-mono">
-        <div class="flex gap-2">
-          <button onclick="closeModal('adminModal')" class="w-1/2 py-3 rounded-xl border border-white/15 text-xs text-neutral-300">Cancel</button>
-          <button onclick="verifyAdmin()" class="w-1/2 py-3 rounded-xl bg-white text-black font-bold text-xs">Login</button>
-        </div>
-      </div>
-
-      <!-- Admin Panel Controls -->
-      <div id="adminPanelView" class="hidden">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-bold text-white">Admin Management</h3>
-          <button onclick="closeModal('adminModal')" class="text-xs text-neutral-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-        </div>
-
-        <div class="border-t border-white/10 pt-3 mb-4">
-          <p class="text-xs font-bold text-neutral-300 mb-2">Register New Student</p>
-          <input type="text" id="newStudentName" placeholder="Full Name" class="w-full text-xs bg-black/60 border border-white/20 rounded-xl p-3 text-white mb-2">
-          <input type="password" id="newStudentPin" maxlength="4" placeholder="4-Digit PIN" class="w-full text-xs bg-black/60 border border-white/20 rounded-xl p-3 text-white mb-3 font-mono">
-          <button onclick="registerStudent()" class="w-full py-3 bg-white text-black font-bold rounded-xl text-xs hover:bg-neutral-200">Add Student</button>
-        </div>
-
-        <div class="border-t border-white/10 pt-3">
-          <p class="text-xs font-bold text-neutral-300 mb-2">Current Roster</p>
-          <div id="adminRosterList" class="max-h-36 overflow-y-auto space-y-2 pr-1">
-            <!-- Dynamic Admin User List -->
-          </div>
-        </div>
-      </div>
-
+<!-- Admin Gate Modal -->
+<div id="adminGateModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 px-4">
+  <div class="glass-strong rounded-2xl p-6 w-full max-w-xs fade-in">
+    <h3 class="text-lg font-semibold mb-1">Admin Access</h3>
+    <p class="text-xs text-slate-400 mb-4">Enter the admin passcode</p>
+    <input id="adminPassInput" type="password" placeholder="Passcode" class="w-full text-center bg-white/5 border border-white/10 rounded-xl py-3 mb-2 outline-none focus:border-sky-400/50">
+    <p id="adminError" class="text-xs text-red-400 h-4 mb-2"></p>
+    <div class="flex gap-2">
+      <button onclick="closeModal('adminGateModal')" class="flex-1 py-2.5 rounded-xl glass text-sm text-slate-300">Cancel</button>
+      <button onclick="submitAdminPass()" class="flex-1 py-2.5 rounded-xl bg-sky-500/80 hover:bg-sky-500 text-sm font-medium">Enter</button>
     </div>
   </div>
+</div>
 
-  <!-- APPLICATION LOGIC -->
-  <script>
-    // 1. CONFIGURATION & STATE
-    const DEFAULT_DB_URL = "https://frienzo-originals-default-rtdb.asia-southeast1.firebasedatabase.app/";
-    const ADMIN_PASSCODE = "1234";
+<!-- Admin Panel Modal -->
+<div id="adminPanelModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 px-4 overflow-y-auto py-10">
+  <div class="glass-strong rounded-2xl p-6 w-full max-w-sm fade-in">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold">Admin Panel</h3>
+      <button onclick="closeModal('adminPanelModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="mb-4">
+      <p class="text-xs text-slate-400 mb-2">Register new student</p>
+      <input id="newName" type="text" placeholder="Full name" class="w-full text-sm bg-white/5 border border-white/10 rounded-xl py-2.5 px-3 mb-2 outline-none focus:border-sky-400/50">
+      <input id="newPin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" class="w-full text-sm bg-white/5 border border-white/10 rounded-xl py-2.5 px-3 mb-2 outline-none focus:border-sky-400/50">
+      <p id="newStudentError" class="text-xs text-red-400 h-4 mb-1"></p>
+      <button onclick="registerStudent()" class="w-full py-2.5 rounded-xl bg-emerald-500/80 hover:bg-emerald-500 text-sm font-medium">Add Student</button>
+    </div>
+    <div class="border-t border-white/10 pt-4">
+      <p class="text-xs text-slate-400 mb-2">Manage students</p>
+      <div id="adminRoster" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+    </div>
+  </div>
+</div>
 
-    let dbUrl = localStorage.getItem('attendanceSync_dbUrl') || DEFAULT_DB_URL;
-    let students = [];
-    let activeUserId = localStorage.getItem('attendanceSync_activeUser') || null;
-    let selectedUserForPin = null;
-    let firebaseRef = null;
+<script>
+/* ---------- Constants ---------- */
+const ADMIN_PASSCODE = "2468"; // internal only — never shown in UI
+const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.asia-southeast1.firebasedatabase.app/";
+const STATUS = { PENDING: 'pending', GOING: 'going', NOT_GOING: 'not_going' };
+const STATUS_META = {
+  pending:   { label: 'Pending',    color: 'bg-yellow-400', glow: 'glow-yellow', text: 'text-yellow-300', icon: 'fa-clock' },
+  going:     { label: 'Attending',  color: 'bg-green-400',  glow: 'glow-green',  text: 'text-green-300',  icon: 'fa-check' },
+  not_going: { label: 'Not Going',  color: 'bg-red-400',    glow: 'glow-red',    text: 'text-red-300',    icon: 'fa-xmark' },
+};
 
-    // Default seed data if database is empty
-    const defaultStudents = [
-      { id: '101', name: 'Alex', pin: '1111', status: 'pending', lastUpdated: Date.now() },
-      { id: '102', name: 'Sam', pin: '2222', status: 'attending', lastUpdated: Date.now() },
-      { id: '103', name: 'Jordan', pin: '3333', status: 'not_attending', lastUpdated: Date.now() }
-    ];
+/* ---------- State ---------- */
+let students = {};      // { id: { name, pin, status } }
+let activeUserId = null;
+let pendingPinAction = null; // { studentId }
+let firebaseDB = null;
+let usingFirebase = false;
 
-    // 2. INITIALIZATION
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('dbUrlInput').value = dbUrl;
-      initFirebase();
-      checkAutoReset();
-      setInterval(checkAutoReset, 60000); // Check auto-reset cycle every minute
+/* ---------- Init ---------- */
+function init() {
+  updateDateLabel();
+  const savedUrl = localStorage.getItem('as_firebase_url') || DEFAULT_DB_URL;
+  if (savedUrl) tryConnectFirebase(savedUrl, true);
+  else loadLocal();
+  renderAll();
+  checkResetSchedule();
+  setInterval(checkResetSchedule, 60 * 1000);
+}
+
+function updateDateLabel() {
+  const d = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  document.getElementById('dateLabel').textContent = `${days[d.getDay()]} · Tracking for next school day`;
+}
+
+/* ---------- Firebase ---------- */
+function tryConnectFirebase(url, silent) {
+  try {
+    if (firebase.apps.length) firebase.app().delete().catch(()=>{});
+  } catch(e) {}
+  try {
+    firebase.initializeApp({ databaseURL: url });
+    firebaseDB = firebase.database();
+    firebaseDB.ref('students').on('value', snap => {
+      const val = snap.val();
+      if (val) { students = val; }
+      else { seedDefaultStudents(true); }
+      renderAll();
+    }, err => {
+      console.error(err);
+      usingFirebase = false;
+      setSyncPill(false, 'Sync error — using local storage');
+      loadLocal(); renderAll();
     });
+    usingFirebase = true;
+    localStorage.setItem('as_firebase_url', url);
+    setSyncPill(true, 'Synced live via Firebase');
+  } catch (e) {
+    console.error(e);
+    usingFirebase = false;
+    setSyncPill(false, 'Invalid database URL — using local storage');
+    loadLocal();
+  }
+}
 
-    // 3. FIREBASE DATABASE CONNECTION
-    function initFirebase() {
-      if (dbUrl) {
-        try {
-          if (!firebase.apps.length) {
-            firebase.initializeApp({ databaseURL: dbUrl });
-          } else {
-            firebase.app().delete().then(() => {
-              firebase.initializeApp({ databaseURL: dbUrl });
-            });
-          }
-          
-          firebaseRef = firebase.database().ref('attendance_roster');
-          
-          // Listen for real-time changes
-          firebaseRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-              students = Array.isArray(data) ? data : Object.values(data);
-              saveLocalBackup();
-              render();
-            } else {
-              // Populate initial default data if empty
-              firebaseRef.set(defaultStudents);
-            }
-          });
+function setSyncPill(active, text) {
+  const dot = document.querySelector('#syncPill .dot');
+  document.getElementById('syncPillText').textContent = text;
+  dot.className = 'dot ' + (active ? 'bg-emerald-400 glow-green' : 'bg-slate-500');
+}
 
-          document.getElementById('syncStatusText').innerText = 'Connected';
-        } catch (e) {
-          console.warn("Firebase initialization error. Using local backup.", e);
-          loadLocalBackup();
-          document.getElementById('syncStatusText').innerText = 'Local Mode';
-        }
-      } else {
-        loadLocalBackup();
-        document.getElementById('syncStatusText').innerText = 'Local Mode';
-      }
-    }
+/* ---------- Local storage ---------- */
+function loadLocal() {
+  const raw = localStorage.getItem('as_students');
+  if (raw) students = JSON.parse(raw);
+  else seedDefaultStudents(false);
+  setSyncPill(false, 'Local mode — not synced');
+}
+function saveLocal() { localStorage.setItem('as_students', JSON.stringify(students)); }
+function persist() {
+  if (usingFirebase && firebaseDB) firebaseDB.ref('students').set(students);
+  else saveLocal();
+}
 
-    function saveSyncSettings() {
-      const inputUrl = document.getElementById('dbUrlInput').value.trim();
-      dbUrl = inputUrl;
-      localStorage.setItem('attendanceSync_dbUrl', dbUrl);
-      closeModal('syncModal');
-      initFirebase();
-    }
+function seedDefaultStudents(pushToFb) {
+  students = {
+    s1: { name: 'Aarav', pin: '1234', status: 'pending' },
+    s2: { name: 'Meera', pin: '1234', status: 'pending' },
+    s3: { name: 'Kabir', pin: '1234', status: 'pending' },
+  };
+  if (pushToFb && firebaseDB) firebaseDB.ref('students').set(students);
+  else if (!pushToFb) saveLocal();
+}
 
-    function loadLocalBackup() {
-      const stored = localStorage.getItem('attendanceSync_students');
-      students = stored ? JSON.parse(stored) : defaultStudents;
-      render();
-    }
+/* ---------- 2PM Reset Engine ---------- */
+function checkResetSchedule() {
+  const now = new Date();
+  const todayKey = now.toISOString().slice(0,10);
+  const lastReset = localStorage.getItem('as_last_reset');
+  const isSunday = now.getDay() === 0;
+  const pastCutoff = now.getHours() >= 14;
 
-    function saveLocalBackup() {
-      localStorage.setItem('attendanceSync_students', JSON.stringify(students));
-    }
+  if (!isSunday && pastCutoff && lastReset !== todayKey) {
+    Object.keys(students).forEach(id => students[id].status = STATUS.PENDING);
+    persist();
+    localStorage.setItem('as_last_reset', todayKey);
+    renderAll();
+  }
+}
 
-    function syncData() {
-      saveLocalBackup();
-      if (firebaseRef) {
-        firebaseRef.set(students);
-      }
-      render();
-    }
+/* ---------- Rendering ---------- */
+function renderAll() {
+  renderSession();
+  renderRoster();
+  if (!document.getElementById('adminPanelModal').classList.contains('hidden')) renderAdminRoster();
+}
 
-    // 4. AUTOMATED 2:00 PM RESET ENGINE
-    function checkAutoReset() {
-      const now = new Date();
-      const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-      const hour = now.getHours();
-
-      // Skip Sundays completely
-      if (dayOfWeek === 0) return;
-
-      const todayString = now.toISOString().split('T')[0];
-      const lastReset = localStorage.getItem('attendanceSync_lastResetDate');
-
-      // Reset past 14:00 (2:00 PM) if not reset today
-      if (hour >= 14 && lastReset !== todayString) {
-        let hasChanges = false;
-        students = students.map(s => {
-          if (s.status !== 'pending') {
-            hasChanges = true;
-            return { ...s, status: 'pending', lastUpdated: Date.now() };
-          }
-          return s;
-        });
-
-        localStorage.setItem('attendanceSync_lastResetDate', todayString);
-        if (hasChanges) {
-          syncData();
-        }
-      }
-    }
-
-    // 5. RENDERING & UI LOGIC
-    function render() {
-      renderSessionCard();
-      renderRoster();
-      renderAdminRoster();
-    }
-
-    function getStatusBadge(status) {
-      switch (status) {
-        case 'attending':
-          return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/30">
-                    🟢 Attending
-                  </span>`;
-        case 'not_attending':
-          return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/5 text-neutral-400 border border-white/10">
-                    🔴 Not Going
-                  </span>`;
-        default:
-          return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/5 text-neutral-300 border border-white/20">
-                    🟡 Pending
-                  </span>`;
-      }
-    }
-
-    function renderSessionCard() {
-      const card = document.getElementById('sessionCard');
-      const activeUser = students.find(s => s.id === activeUserId);
-
-      if (!activeUser) {
-        card.innerHTML = `
-          <div class="py-3">
-            <div class="w-12 h-12 rounded-full bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-3">
-              <i class="fa-solid fa-user text-neutral-400 text-lg"></i>
-            </div>
-            <h3 class="text-base font-bold text-white">No Active User</h3>
-            <p class="text-xs text-neutral-400 mt-1 mb-4">Tap your profile in the roster below to unlock your card.</p>
-          </div>
-        `;
-        return;
-      }
-
-      card.innerHTML = `
-        <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
-          <div class="text-left">
-            <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Active Session</span>
-            <h3 class="text-lg font-bold text-white leading-tight">${escapeHtml(activeUser.name)}</h3>
-          </div>
-          <button onclick="logout()" class="glass-btn px-3 py-1.5 rounded-full text-xs text-neutral-300 hover:text-white flex items-center gap-1.5">
-            <i class="fa-solid fa-right-from-bracket text-xs"></i> Switch
-          </button>
+function renderSession() {
+  const card = document.getElementById('sessionCard');
+  if (!activeUserId || !students[activeUserId]) {
+    card.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-full glass flex items-center justify-center text-slate-400">
+          <i class="fa-solid fa-user"></i>
         </div>
-
         <div>
-          <p class="text-xs text-neutral-400 mb-3 font-medium">Select your attendance status:</p>
-          <div class="grid grid-cols-3 gap-2">
-            
-            <button onclick="updateStatus('attending')" 
-                    class="glass-btn py-3 px-2 rounded-2xl flex flex-col items-center gap-1 ${activeUser.status === 'attending' ? 'btn-active-attending' : ''}">
-              <span class="text-base">🟢</span>
-              <span class="text-xs font-bold text-white">Attending</span>
-            </button>
-
-            <button onclick="updateStatus('pending')" 
-                    class="glass-btn py-3 px-2 rounded-2xl flex flex-col items-center gap-1 ${activeUser.status === 'pending' ? 'btn-active-attending' : ''}">
-              <span class="text-base">🟡</span>
-              <span class="text-xs font-bold text-white">Pending</span>
-            </button>
-
-            <button onclick="updateStatus('not_attending')" 
-                    class="glass-btn py-3 px-2 rounded-2xl flex flex-col items-center gap-1 ${activeUser.status === 'not_attending' ? 'btn-active-attending' : ''}">
-              <span class="text-base">🔴</span>
-              <span class="text-xs font-bold text-white">Not Going</span>
-            </button>
-
-          </div>
+          <p class="text-sm font-medium">No profile selected</p>
+          <p class="text-xs text-slate-400">Tap your name below to log in</p>
         </div>
-      `;
-    }
-
-    function renderRoster() {
-      const list = document.getElementById('rosterList');
-      document.getElementById('rosterCount').innerText = `${students.length} Members`;
-
-      if (students.length === 0) {
-        list.innerHTML = `<div class="glass-panel rounded-2xl p-6 text-center text-xs text-neutral-500">No students registered yet. Use the admin panel to add profiles.</div>`;
-        return;
-      }
-
-      list.innerHTML = students.map(student => {
-        const isActive = student.id === activeUserId;
-        return `
-          <div onclick="promptUserPin('${student.id}')" 
-               class="glass-panel rounded-2xl p-3.5 flex items-center justify-between cursor-pointer hover:border-white/40 transition-all ${isActive ? 'border-white/50 bg-white/10' : ''}">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center font-bold text-white text-sm">
-                ${student.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h4 class="text-sm font-bold text-white flex items-center gap-1.5">
-                  ${escapeHtml(student.name)}
-                  ${isActive ? '<i class="fa-solid fa-circle-check text-xs text-white"></i>' : ''}
-                </h4>
-                <p class="text-[10px] text-neutral-400">${isActive ? 'Currently unlocked' : 'Tap to unlock'}</p>
-              </div>
-            </div>
-            <div>
-              ${getStatusBadge(student.status)}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderAdminRoster() {
-      const adminList = document.getElementById('adminRosterList');
-      adminList.innerHTML = students.map(s => `
-        <div class="flex items-center justify-between bg-black/60 p-2.5 rounded-xl border border-white/10 text-xs">
-          <span class="text-white font-medium">${escapeHtml(s.name)}</span>
-          <button onclick="deleteStudent('${s.id}')" class="text-neutral-400 hover:text-white px-2 py-1"><i class="fa-solid fa-trash"></i></button>
+      </div>`;
+    return;
+  }
+  const s = students[activeUserId];
+  const meta = STATUS_META[s.status] || STATUS_META.pending;
+  card.innerHTML = `
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-full glass flex items-center justify-center ${meta.glow}">
+          <span class="dot ${meta.color}"></span>
         </div>
-      `).join('');
-    }
+        <div>
+          <p class="text-sm font-medium">${escapeHtml(s.name)}</p>
+          <p class="text-xs ${meta.text}">${meta.label}</p>
+        </div>
+      </div>
+      <button onclick="logout()" class="text-xs text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Switch
+      </button>
+    </div>
+    <div class="grid grid-cols-3 gap-2">
+      ${statusButton('going', 'Going')}
+      ${statusButton('pending', 'Pending')}
+      ${statusButton('not_going', 'Not Going')}
+    </div>`;
+}
 
-    // 6. USER INTERACTIONS
-    function promptUserPin(userId) {
-      if (activeUserId === userId) return;
-      selectedUserForPin = userId;
-      const user = students.find(s => s.id === userId);
-      document.getElementById('pinUserTitle').innerText = `Unlock ${user.name}`;
-      document.getElementById('pinInput').value = '';
-      openModal('pinModal');
-      setTimeout(() => document.getElementById('pinInput').focus(), 100);
-    }
+function statusButton(status, label) {
+  const meta = STATUS_META[status];
+  const active = students[activeUserId]?.status === status;
+  return `<button onclick="setStatus('${status}')" class="py-2.5 rounded-xl text-xs font-medium transition ${active ? meta.color.replace('bg-','bg-')+' text-slate-900 '+meta.glow : 'glass text-slate-300 hover:border-white/20'}">
+    <i class="fa-solid ${meta.icon} mr-1"></i>${label}
+  </button>`;
+}
 
-    function submitPin() {
-      const pin = document.getElementById('pinInput').value;
-      const user = students.find(s => s.id === selectedUserForPin);
+function renderRoster() {
+  const el = document.getElementById('roster');
+  const ids = Object.keys(students);
+  if (!ids.length) { el.innerHTML = `<p class="text-xs text-slate-500 px-1 py-3">No students yet. Ask an admin to add the roster.</p>`; return; }
+  el.innerHTML = ids.map(id => {
+    const s = students[id];
+    const meta = STATUS_META[s.status] || STATUS_META.pending;
+    const isMe = id === activeUserId;
+    return `
+    <button onclick="selectProfile('${id}')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition hover:bg-white/5 ${isMe ? 'bg-white/5 border border-sky-400/20' : ''}">
+      <div class="flex items-center gap-2.5">
+        <i class="fa-solid ${isMe ? 'fa-lock-open text-sky-300' : 'fa-lock text-slate-500'} text-xs"></i>
+        <span class="text-sm text-slate-200">${escapeHtml(s.name)}</span>
+      </div>
+      <span class="flex items-center gap-1.5 text-xs ${meta.text}">
+        <span class="dot ${meta.color} ${meta.glow}"></span>${meta.label}
+      </span>
+    </button>`;
+  }).join('');
+}
 
-      if (user && user.pin === pin) {
-        activeUserId = user.id;
-        localStorage.setItem('attendanceSync_activeUser', activeUserId);
-        closeModal('pinModal');
-        render();
-      } else {
-        alert('Incorrect 4-Digit PIN. Please try again.');
-      }
-    }
+function escapeHtml(str) {
+  const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+}
 
-    function updateStatus(newStatus) {
-      if (!activeUserId) return;
+/* ---------- Profile / PIN flow ---------- */
+function selectProfile(id) {
+  if (id === activeUserId) return;
+  pendingPinAction = { studentId: id };
+  document.getElementById('pinStudentName').textContent = students[id].name;
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').textContent = '';
+  openModal('pinModal');
+  setTimeout(()=>document.getElementById('pinInput').focus(), 100);
+}
 
-      students = students.map(s => {
-        if (s.id === activeUserId) {
-          return { ...s, status: newStatus, lastUpdated:
+function submitPin() {
+  const val = document.getElementById('pinInput').value.trim();
+  const id = pendingPinAction?.studentId;
+  if (!id) return;
+  if (val === students[id].pin) {
+    activeUserId = id;
+    closeModal('pinModal');
+    renderAll();
+  } else {
+    document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
+  }
+}
+
+function logout() { activeUserId = null; renderAll(); }
+
+function setStatus(status) {
+  if (!activeUserId) return;
+  students[activeUserId].status = status;
+  persist();
+  renderAll();
+}
+
+/* ---------- Sync Modal ---------- */
+function openSyncModal() {
+  document.getElementById('firebaseUrlInput').value = localStorage.getItem('as_firebase_url') || '';
+  document.getElementById('syncError').textContent = '';
+  openModal('syncModal');
+}
+function saveFirebaseUrl() {
+  const url = document.getElementById('firebaseUrlInput').value.trim();
+  if (!url) { localStorage.removeItem('as_firebase_url'); usingFirebase = false; loadLocal(); renderAll(); closeModal('syncModal'); return; }
+  if (!/^https:\/\/.+firebasedatabase\.app\/?$/.test(url) && !/^https:\/\/.+\.firebaseio\.com\/?$/.test(url)) {
+    document.getElementById('syncError').textContent = 'Enter a valid Firebase Realtime Database URL.';
+    return;
+  }
+  tryConnectFirebase(url, false);
+  closeModal('syncModal');
+}
+
+/* ---------- Admin flow ---------- */
+function openAdminGate() {
+  document.getElementById('adminPassInput').value = '';
+  document.getElementById('adminError').textContent = '';
+  openModal('adminGateModal');
+}
+function submitAdminPass() {
+  const val = document.getElementById('adminPassInput').value;
+  if (val === ADMIN_PASSCODE) {
+    closeModal('adminGateModal');
+    renderAdminRoster();
+    openModal('adminPanelModal');
+  } else {
+    document.getElementById('adminError').textContent = 'Incorrect passcode.';
+  }
+}
+function renderAdminRoster() {
+  const el = document.getElementById('adminRoster');
+  const ids = Object.keys(students);
+  el.innerHTML = ids.map(id => `
+    <div class="flex items-center justify-between px-3 py-2 rounded-xl glass">
+      <span class="text-sm">${escapeHtml(students[id].name)}</span>
+      <button onclick="deleteStudent('${id}')" class="text-xs text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+    </div>`).join('') || `<p class="text-xs text-slate-500">No students yet.</p>`;
+}
+function registerStudent() {
+  const name = document.getElementById('newName').value.trim();
+  const pin = document.getElementById('newPin').value.trim();
+  const errEl = document.getElementById('newStudentError');
+  if (!name) { errEl.textContent = 'Enter a name.'; return; }
+  if (!/^\d{4}$/.test(pin)) { errEl.textContent = 'PIN must be exactly 4 digits.'; return; }
+  const id = 's_' + Date.now();
+  students[id] = { name, pin, status: 'pending' };
+  persist();
+  document.getElementById('newName').value = '';
+  document.getElementById('newPin').value = '';
+  errEl.textContent = '';
+  renderAdminRoster();
+  renderRoster();
+}
+function deleteStudent(id) {
+  delete students[id];
+  if (activeUserId === id) activeUserId = null;
+  persist();
+  renderAdminRoster();
+  renderAll();
+}
+
+/* ---------- Modal helpers ---------- */
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); }));
+
+init();
+</script>
+</body>
+</html>
