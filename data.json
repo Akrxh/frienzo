@@ -1,12 +1,8 @@
 {
-  "attendance": {
-    "lastReset": "",
-    "students": {
-      "s_demo1": {
-        "name": "Demo Student",
-        "pin": "d97ef689b43d4f274df32eb929785d28660803ce144ca0f8ff94aa124eeabc1c",
-        "status": "pending"
-      }
+  "rules": {
+    "attendance": {
+      ".read": true,
+      ".write": true
     }
   }
 }
