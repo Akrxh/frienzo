@@ -1,470 +1,478 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-<meta charset="utf-8">
-<meta name="theme-color" content="#000000">
-<meta name="color-scheme" content="dark">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Frienzo — Attendance Tracker</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --tx: #ffffff;
-  --mu: rgba(255,255,255,.58);
-  --mu2: rgba(255,255,255,.38);
-  --line: rgba(255,255,255,.14);
-  --line2: rgba(255,255,255,.24);
-  --f: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AttendanceSync</title>
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-input { user-select: auto !important; }
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-html, body { 
-  min-height: 100%; 
-  overflow-x: hidden; 
-  touch-action: manipulation; 
-  background-color: #000;
-  color: var(--tx);
-  font-family: var(--f);
-  -webkit-font-smoothing: antialiased;
-}
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-body {
-  background-image: radial-gradient(720px 500px at 50% -14%, rgba(255,255,255,.14), transparent 70%);
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
+  <!-- Firebase JavaScript SDK (Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-.wrap { position: relative; max-width: 32rem; margin: 0 auto; padding: 1.2rem 1.1rem 3rem; }
-.top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
-
-.brand { display: flex; flex-direction: column; gap: .15rem; }
-.mark { font-size: 1.3rem; font-weight: 600; letter-spacing: -.04em; padding: 0; line-height: 1.1; background: none; border: 0; color: var(--tx); font-family: var(--f); cursor: pointer; text-align: left; }
-.sub { margin: 0; font-size: .72rem; color: var(--mu2); letter-spacing: .03em; font-weight: 400; }
-
-.pill { display: flex; align-items: center; gap: .5rem; padding: .5rem .95rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .78rem var(--f); cursor: pointer; transition: transform 0.1s, background 0.15s; }
-.pill:active { transform: scale(.95); background: rgba(255,255,255,.18); }
-
-.sd { width: .5rem; height: .5rem; border-radius: 50%; background: rgba(255,255,255,.3); transition: background 0.3s, box-shadow 0.3s; }
-.sd.on { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-
-.hero { padding: 2.8rem 0 2rem; }
-.kicker { margin: 0; color: var(--mu); font-size: .68rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; }
-
-.day { font-family: var(--f); font-weight: 600; font-size: clamp(3rem, 15vw, 4.8rem); line-height: .98; letter-spacing: -.05em; margin: .4rem 0 .5rem; color: #fff; }
-.date { margin: 0; color: var(--mu); font-size: .95rem; font-weight: 400; }
-
-.card { position: relative; background: rgba(255,255,255,.045); border: 1px solid var(--line); border-radius: 1.8rem; padding: 1.2rem; margin-bottom: 1rem; backdrop-filter: blur(20px); }
-
-.rh { padding: .2rem .3rem .9rem; display: flex; align-items: baseline; justify-content: space-between; }
-.rh h2 { margin: 0; font-family: var(--f); font-weight: 600; letter-spacing: -.03em; font-size: 1.25rem; }
-.rh span { color: var(--mu); font-size: .78rem; }
-
-.foot-note { text-align: center; color: var(--mu2); font-size: .72rem; margin: 2rem 0 0; line-height: 1.5; }
-
-.glass { position: relative; background: rgba(20,20,22,.95); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.85); backdrop-filter: blur(25px); pointer-events: auto; }
-.inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); margin-bottom: 0.75rem; transition: border-color 0.2s; }
-.inp:focus { border-color: rgba(255,255,255,.6); }
-
-.btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 999px; font: 600 0.88rem var(--f); background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; transition: transform 0.1s, opacity 0.1s; }
-.btn:active { transform: scale(0.95); opacity: 0.85; }
-
-.btn.ghost { background: rgba(255,255,255,0.08); border-color: var(--line); color: #fff; }
-.btn.ghost:active { background: rgba(255,255,255,0.2); }
-
-.btn.danger { background: rgba(255,60,60,0.18); border-color: rgba(255,60,60,0.35); color: #ff8080; }
-.btn.danger:active { background: rgba(255,60,60,0.3); }
-
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,.82); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 100; opacity: 0; transition: opacity 0.2s ease; }
-.modal.top { align-items: flex-start; padding-top: max(8vh, env(safe-area-inset-top, 0px)); }
-.modal.show { display: flex; opacity: 1; }
-
-.roster-item { cursor: pointer; transition: background 0.15s ease, transform 0.1s; border-radius: 1.1rem; padding: 0.65rem 0.75rem; margin: 0.1rem 0; }
-.roster-item:active { background: rgba(255,255,255,0.09); transform: scale(0.99); }
-
-.admin-account-item { display: flex; flex-direction: column; gap: 0.5rem; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 1.1rem; padding: 0.85rem; margin-bottom: 0.75rem; }
-
-#toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #fff; color: #000; padding: 0.6rem 1.2rem; border-radius: 999px; font: 600 0.82rem var(--f); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 200; opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
-#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-</style>
-</head>
-<body>
-<main class="wrap">
-  <header class="top">
-    <div class="brand">
-      <button id="logo" class="mark" type="button">Frienzo</button>
-      <p class="sub">Made with love by Tryin'</p>
-    </div>
-    <div class="flex items-center gap-2">
-      <button id="sessionToggleBtn" class="pill !bg-white/10" type="button">Sign In</button>
-      <button id="syncBtn" class="pill" type="button">
-        <span id="syncDot" class="sd"></span>
-        <span id="syncTxt">Local</span>
-      </button>
-    </div>
-  </header>
-
-  <section class="hero">
-    <p class="kicker">Attendance Status</p>
-    <h1 id="dayName" class="day">---</h1>
-    <p id="dayDate" class="date">---</p>
-    <div id="userGreeting" class="mt-4 text-sm text-slate-300"></div>
-  </section>
-
-  <section class="card">
-    <div class="rh">
-      <h2>Class roster & Status</h2>
-      <span id="rosterCount">0 members</span>
-    </div>
-    <div id="roster"></div>
-  </section>
-
-  <p class="foot-note">
-    Tap any account in the roster to sign in with your PIN code.<br>
-    <button id="openAdminTrigger" type="button" class="underline text-slate-400 hover:text-white mt-2 inline-block">Admin Panel</button>
-  </p>
-</main>
-
-<!-- Login Modal -->
-<div id="loginModal" class="modal">
-  <div class="glass p-6 w-full max-w-sm">
-    <form id="loginForm" action="javascript:void(0);">
-      <h2 id="loginTitle" class="text-lg font-semibold mb-1">Member Login</h2>
-      <p class="text-slate-400 text-sm mb-4">Enter your 4-digit code to log in.</p>
-      <input id="loginPin" type="password" inputmode="numeric" maxlength="4" class="inp" placeholder="4-Digit PIN" autocomplete="off">
-      <p id="loginErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
-      <div class="flex gap-2 mt-5 justify-end">
-        <button class="btn ghost" data-close="loginModal" type="button">Cancel</button>
-        <button id="loginGo" class="btn" type="submit">Login</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Sync Modal -->
-<div id="syncModal" class="modal top">
-  <div class="glass p-6 w-full max-w-md">
-    <form id="syncForm" action="javascript:void(0);">
-      <h2 class="text-lg font-semibold mb-1">Device sync</h2>
-      <p class="text-slate-400 text-sm mb-4">Firebase Realtime Database URL for cross-device syncing.</p>
-      <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://..." autocomplete="off">
-      <p id="syncErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
-      <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
-        <button id="syncClose" class="btn ghost" data-close="syncModal" type="button">Close</button>
-        <button id="syncOff" class="btn ghost" type="button">Local only</button>
-        <button id="syncSave" class="btn" type="submit">Connect</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Admin Modal -->
-<div id="adminModal" class="modal">
-  <div class="glass p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-    <div id="adminGate">
-      <form id="adminGateForm" action="javascript:void(0);">
-        <h2 class="text-lg font-semibold mb-1">Admin access</h2>
-        <p class="text-slate-400 text-sm mb-4">Enter the admin passcode.</p>
-        <input id="adminPass" type="password" inputmode="numeric" class="inp" placeholder="Passcode" autocomplete="off">
-        <p id="adminErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
-        <div class="flex gap-2 mt-5 justify-end">
-          <button class="btn ghost" data-close="adminModal" type="button">Cancel</button>
-          <button id="adminGo" class="btn" type="submit">Unlock</button>
-        </div>
-      </form>
-    </div>
-    <div id="adminPanel" class="hidden">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold">Admin Panel</h2>
-        <button class="btn ghost" data-close="adminModal" type="button">Close</button>
-      </div>
-      <form id="addAccForm" action="javascript:void(0);" class="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
-        <h3 class="font-semibold text-sm mb-3">Add New Account</h3>
-        <input id="newAccName" class="inp" type="text" placeholder="Full Name" autocomplete="off">
-        <input id="newAccUser" class="inp" type="text" placeholder="Username (e.g. alex)" autocomplete="off">
-        <input id="newAccPin" class="inp" type="password" inputmode="numeric" maxlength="4" placeholder="4-Digit PIN Code" autocomplete="off">
-        <button id="addAccBtn" class="btn w-full mt-1" type="submit">Add Account</button>
-      </form>
-      <div>
-        <h3 class="font-semibold text-sm mb-3">Manage Existing Accounts</h3>
-        <div id="adminAccountsList"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Toast notification -->
-<div id="toast"></div>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  // Date Setup
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const today = new Date();
-  document.getElementById("dayName").textContent = days[today.getDay()];
-  document.getElementById("dayDate").textContent = today.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
-
-  // Default accounts
-  const DEFAULT_ACCOUNTS = [
-    { id: "alex", name: "Alex Turner", pin: "1234", status: "absent", time: "" },
-    { id: "jessica", name: "Jessica Smith", pin: "5678", status: "absent", time: "" }
-  ];
-
-  const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.asia-southeast1.firebasedatabase.app/";
-  if (!localStorage.getItem("frienzo_db_url")) {
-    localStorage.setItem("frienzo_db_url", DEFAULT_DB_URL);
-  }
-
-  function showToast(msg) {
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.classList.add("show");
-    setTimeout(() => t.classList.remove("show"), 2500);
-  }
-
-  function getActiveDbUrl() {
-    let url = localStorage.getItem("frienzo_db_url");
-    return url ? (url.endsWith('/') ? url : url + '/') : null;
-  }
-
-  function getAccounts() {
-    try {
-      const stored = localStorage.getItem("frienzo_accounts");
-      return stored ? JSON.parse(stored) : DEFAULT_ACCOUNTS;
-    } catch {
-      return DEFAULT_ACCOUNTS;
-    }
-  }
-
-  function getLoggedInUser() {
-    return localStorage.getItem("frienzo_logged_in") || null;
-  }
-
-  function setLoggedInUser(id) {
-    if (id) localStorage.setItem("frienzo_logged_in", id);
-    else localStorage.removeItem("frienzo_logged_in");
-    renderUI();
-  }
-
-  function saveAccounts(accounts) {
-    localStorage.setItem("frienzo_accounts", JSON.stringify(accounts));
-    renderUI();
-    pushToCloud(accounts);
-  }
-
-  async function pushToCloud(accounts) {
-    const dbUrl = getActiveDbUrl();
-    if (!dbUrl) return;
-    try {
-      await fetch(dbUrl + "accounts.json", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(accounts)
-      });
-      updateSyncStatus(true);
-    } catch (e) {
-      console.error("Cloud push error:", e);
-      updateSyncStatus(false);
-    }
-  }
-
-  async function pullFromCloud() {
-    const dbUrl = getActiveDbUrl();
-    if (!dbUrl) {
-      updateSyncStatus(false);
-      return;
-    }
-    try {
-      const res = await fetch(dbUrl + "accounts.json");
-      if (res.ok) {
-        const data = await res.json();
-        if (data) {
-          let remoteAccounts = Array.isArray(data) ? data : (typeof data === 'object' ? Object.values(data) : null);
-          if (remoteAccounts && Array.isArray(remoteAccounts)) {
-            if (JSON.stringify(getAccounts()) !== JSON.stringify(remoteAccounts)) {
-              localStorage.setItem("frienzo_accounts", JSON.stringify(remoteAccounts));
-              renderUI();
-            }
-            updateSyncStatus(true);
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            iosDark: '#000000',
+            iosCard: 'rgba(255, 255, 255, 0.05)',
+            iosBorder: 'rgba(255, 255, 255, 0.15)',
           }
         }
-      } else {
-        updateSyncStatus(false);
-      }
-    } catch (e) {
-      updateSyncStatus(false);
-    }
-  }
-
-  function updateSyncStatus(isOnline) {
-    const syncTxt = document.getElementById("syncTxt");
-    const syncDot = document.getElementById("syncDot");
-    const activeUrl = getActiveDbUrl();
-
-    if (!activeUrl) {
-      syncTxt.textContent = "Local";
-      syncDot.classList.remove("on");
-    } else if (isOnline) {
-      syncTxt.textContent = "Synced";
-      syncDot.classList.add("on");
-    } else {
-      syncTxt.textContent = "Offline";
-      syncDot.classList.remove("on");
-    }
-  }
-
-  pullFromCloud();
-  setInterval(pullFromCloud, 4000);
-
-  function renderUI() {
-    renderRoster();
-    renderHeaderGreeting();
-  }
-
-  function renderHeaderGreeting() {
-    const greetingEl = document.getElementById("userGreeting");
-    const toggleBtn = document.getElementById("sessionToggleBtn");
-    const loggedId = getLoggedInUser();
-    const accounts = getAccounts();
-
-    if (!loggedId) {
-      greetingEl.innerHTML = `<span class="text-amber-400">Not signed in.</span> Tap your name below to log in.`;
-      toggleBtn.textContent = "Sign In";
-      toggleBtn.onclick = () => {
-        if (accounts.length > 0) openLoginModal(accounts[0].id);
-      };
-    } else {
-      const user = accounts.find(a => a.id === loggedId);
-      if (user) {
-        const isPresent = user.status === "present";
-        greetingEl.innerHTML = `Signed in as <b>${user.name}</b> — Status: <span class="${isPresent ? 'text-green-400' : 'text-slate-400'}">${isPresent ? 'Present (' + user.time + ')' : 'Absent'}</span>`;
-        toggleBtn.textContent = isPresent ? "Check Out" : "Check In";
-        toggleBtn.onclick = () => {
-          user.status = isPresent ? "absent" : "present";
-          user.time = isPresent ? "" : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          saveAccounts(accounts);
-          showToast(isPresent ? "Checked Out" : "Checked In Successfully!");
-        };
-      } else {
-        setLoggedInUser(null);
       }
     }
-  }
+  </script>
 
-  function renderRoster() {
-    const rosterEl = document.getElementById("roster");
-    const accounts = getAccounts();
-    const loggedId = getLoggedInUser();
-
-    document.getElementById("rosterCount").textContent = `${accounts.length} members`;
-    
-    if (!accounts.length) {
-      rosterEl.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">No accounts found.</p>`;
-      return;
+  <style>
+    /* Premium Black & White Backdrop */
+    body {
+      background: radial-gradient(circle at top, #1c1c1e 0%, #000000 80%);
+      min-height: 100vh;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    rosterEl.innerHTML = accounts.map(acc => {
-      const isPresent = acc.status === "present";
-      const isMe = acc.id === loggedId;
-      return `
-        <div class="roster-item flex items-center justify-between border-b border-white/5 last:border-0" data-id="${acc.id}">
-          <div class="flex items-center gap-3 pointer-events-none">
-            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-semibold text-sm text-white">${acc.name.charAt(0)}</div>
-            <div class="flex flex-col">
-              <span class="font-medium text-sm flex items-center gap-1.5">
-                ${acc.name} ${isMe ? '<span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded text-white font-normal">You</span>' : ''}
-              </span>
-              <span class="text-xs text-slate-400">@${acc.id}</span>
-            </div>
+    /* iOS Glassmorphism styling */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .glass-btn {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .glass-btn:active {
+      transform: translateY(0px);
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Active state for selection buttons */
+    .btn-active-attending {
+      background: rgba(255, 255, 255, 0.25) !important;
+      border-color: rgba(255, 255, 255, 0.8) !important;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between p-4 sm:p-6 max-w-lg mx-auto selection:bg-white selection:text-black">
+
+  <!-- HEADER -->
+  <header class="flex justify-between items-center mb-6 pt-2">
+    <div>
+      <h1 class="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
+        <i class="fa-solid fa-graduation-cap text-white"></i> AttendanceSync
+      </h1>
+      <p class="text-xs text-neutral-400 mt-0.5">Daily Attendance Network</p>
+    </div>
+    <button onclick="openModal('syncModal')" class="glass-btn px-3 py-1.5 rounded-full text-xs font-semibold text-neutral-200 flex items-center gap-2">
+      <i class="fa-solid fa-wifi text-neutral-300"></i>
+      <span id="syncStatusText">Syncing...</span>
+    </button>
+  </header>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 space-y-6">
+
+    <!-- ACTIVE USER SESSION CARD -->
+    <section>
+      <div id="sessionCard" class="glass-panel rounded-3xl p-5 text-center shadow-2xl relative overflow-hidden">
+        <!-- Content rendered via JavaScript -->
+      </div>
+    </section>
+
+    <!-- CLASS ROSTER LIST -->
+    <section>
+      <div class="flex justify-between items-center mb-3 px-1">
+        <h2 class="text-xs font-bold tracking-widest text-neutral-400 uppercase">Class Roster</h2>
+        <span id="rosterCount" class="text-xs text-neutral-500 font-mono">0 Members</span>
+      </div>
+
+      <div id="rosterList" class="space-y-2.5">
+        <!-- Roster items rendered via JavaScript -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-6 border-t border-white/10 mt-6">
+    <button onclick="openModal('adminModal')" class="text-xs text-neutral-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 mx-auto">
+      <i class="fa-solid fa-shield-halved text-neutral-400"></i> Admin Panel
+    </button>
+  </footer>
+
+  <!-- MODAL: PIN AUTHENTICATION -->
+  <div id="pinModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+    <div class="glass-panel w-full max-w-xs rounded-3xl p-6 text-center shadow-2xl">
+      <div class="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-3">
+        <i class="fa-solid fa-lock text-white text-lg"></i>
+      </div>
+      <h3 class="text-lg font-bold text-white mb-1" id="pinUserTitle">Enter Security PIN</h3>
+      <p class="text-xs text-neutral-400 mb-4">Enter your 4-digit passcode to unlock</p>
+      
+      <input type="password" id="pinInput" maxlength="4" placeholder="••••" 
+             class="w-full text-center text-3xl tracking-[0.4em] bg-black/60 border border-white/20 rounded-2xl py-3 text-white focus:outline-none focus:border-white mb-5 font-mono">
+      
+      <div class="flex gap-2">
+        <button onclick="closeModal('pinModal')" class="w-1/2 py-3 rounded-2xl border border-white/15 text-xs text-neutral-300 hover:bg-white/10">Cancel</button>
+        <button onclick="submitPin()" class="w-1/2 py-3 rounded-2xl bg-white text-black font-bold text-xs hover:bg-neutral-200">Unlock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SYNC SETTINGS -->
+  <div id="syncModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <i class="fa-solid fa-database text-neutral-300"></i> Database Endpoint
+      </h3>
+      <p class="text-xs text-neutral-400 mb-4">Firebase Realtime Database URL for multi-device sync.</p>
+
+      <label class="block text-xs font-semibold text-neutral-300 mb-1">Database URL</label>
+      <input type="text" id="dbUrlInput" placeholder="https://..." 
+             class="w-full text-xs bg-black/60 border border-white/20 rounded-xl p-3 text-white focus:outline-none focus:border-white mb-4 font-mono">
+
+      <div class="flex gap-2">
+        <button onclick="closeModal('syncModal')" class="w-1/2 py-3 rounded-xl border border-white/15 text-xs text-neutral-300 hover:bg-white/10">Cancel</button>
+        <button onclick="saveSyncSettings()" class="w-1/2 py-3 rounded-xl bg-white text-black font-bold text-xs hover:bg-neutral-200">Save & Sync</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN ACCESS -->
+  <div id="adminModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+      
+      <!-- Admin Verification View -->
+      <div id="adminAuthView">
+        <h3 class="text-lg font-bold text-white mb-1">Admin Verification</h3>
+        <p class="text-xs text-neutral-400 mb-4">Enter system passcode to manage users (Default: 1234)</p>
+        <input type="password" id="adminPassInput" placeholder="Passcode" 
+               class="w-full text-center text-lg bg-black/60 border border-white/20 rounded-xl py-3 text-white focus:outline-none focus:border-white mb-4 font-mono">
+        <div class="flex gap-2">
+          <button onclick="closeModal('adminModal')" class="w-1/2 py-3 rounded-xl border border-white/15 text-xs text-neutral-300">Cancel</button>
+          <button onclick="verifyAdmin()" class="w-1/2 py-3 rounded-xl bg-white text-black font-bold text-xs">Login</button>
+        </div>
+      </div>
+
+      <!-- Admin Panel Controls -->
+      <div id="adminPanelView" class="hidden">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold text-white">Admin Management</h3>
+          <button onclick="closeModal('adminModal')" class="text-xs text-neutral-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+
+        <div class="border-t border-white/10 pt-3 mb-4">
+          <p class="text-xs font-bold text-neutral-300 mb-2">Register New Student</p>
+          <input type="text" id="newStudentName" placeholder="Full Name" class="w-full text-xs bg-black/60 border border-white/20 rounded-xl p-3 text-white mb-2">
+          <input type="password" id="newStudentPin" maxlength="4" placeholder="4-Digit PIN" class="w-full text-xs bg-black/60 border border-white/20 rounded-xl p-3 text-white mb-3 font-mono">
+          <button onclick="registerStudent()" class="w-full py-3 bg-white text-black font-bold rounded-xl text-xs hover:bg-neutral-200">Add Student</button>
+        </div>
+
+        <div class="border-t border-white/10 pt-3">
+          <p class="text-xs font-bold text-neutral-300 mb-2">Current Roster</p>
+          <div id="adminRosterList" class="max-h-36 overflow-y-auto space-y-2 pr-1">
+            <!-- Dynamic Admin User List -->
           </div>
-          <div class="pointer-events-none">
-            <span class="text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 ${isPresent ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-white/5 text-slate-400 border border-white/10'}">
-              ${isPresent ? '<span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>' : ''}
-              ${isPresent ? 'Present ' + (acc.time ? '· ' + acc.time : '') : 'Absent'}
-            </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC -->
+  <script>
+    // 1. CONFIGURATION & STATE
+    const DEFAULT_DB_URL = "https://frienzo-originals-default-rtdb.asia-southeast1.firebasedatabase.app/";
+    const ADMIN_PASSCODE = "1234";
+
+    let dbUrl = localStorage.getItem('attendanceSync_dbUrl') || DEFAULT_DB_URL;
+    let students = [];
+    let activeUserId = localStorage.getItem('attendanceSync_activeUser') || null;
+    let selectedUserForPin = null;
+    let firebaseRef = null;
+
+    // Default seed data if database is empty
+    const defaultStudents = [
+      { id: '101', name: 'Alex', pin: '1111', status: 'pending', lastUpdated: Date.now() },
+      { id: '102', name: 'Sam', pin: '2222', status: 'attending', lastUpdated: Date.now() },
+      { id: '103', name: 'Jordan', pin: '3333', status: 'not_attending', lastUpdated: Date.now() }
+    ];
+
+    // 2. INITIALIZATION
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('dbUrlInput').value = dbUrl;
+      initFirebase();
+      checkAutoReset();
+      setInterval(checkAutoReset, 60000); // Check auto-reset cycle every minute
+    });
+
+    // 3. FIREBASE DATABASE CONNECTION
+    function initFirebase() {
+      if (dbUrl) {
+        try {
+          if (!firebase.apps.length) {
+            firebase.initializeApp({ databaseURL: dbUrl });
+          } else {
+            firebase.app().delete().then(() => {
+              firebase.initializeApp({ databaseURL: dbUrl });
+            });
+          }
+          
+          firebaseRef = firebase.database().ref('attendance_roster');
+          
+          // Listen for real-time changes
+          firebaseRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              students = Array.isArray(data) ? data : Object.values(data);
+              saveLocalBackup();
+              render();
+            } else {
+              // Populate initial default data if empty
+              firebaseRef.set(defaultStudents);
+            }
+          });
+
+          document.getElementById('syncStatusText').innerText = 'Connected';
+        } catch (e) {
+          console.warn("Firebase initialization error. Using local backup.", e);
+          loadLocalBackup();
+          document.getElementById('syncStatusText').innerText = 'Local Mode';
+        }
+      } else {
+        loadLocalBackup();
+        document.getElementById('syncStatusText').innerText = 'Local Mode';
+      }
+    }
+
+    function saveSyncSettings() {
+      const inputUrl = document.getElementById('dbUrlInput').value.trim();
+      dbUrl = inputUrl;
+      localStorage.setItem('attendanceSync_dbUrl', dbUrl);
+      closeModal('syncModal');
+      initFirebase();
+    }
+
+    function loadLocalBackup() {
+      const stored = localStorage.getItem('attendanceSync_students');
+      students = stored ? JSON.parse(stored) : defaultStudents;
+      render();
+    }
+
+    function saveLocalBackup() {
+      localStorage.setItem('attendanceSync_students', JSON.stringify(students));
+    }
+
+    function syncData() {
+      saveLocalBackup();
+      if (firebaseRef) {
+        firebaseRef.set(students);
+      }
+      render();
+    }
+
+    // 4. AUTOMATED 2:00 PM RESET ENGINE
+    function checkAutoReset() {
+      const now = new Date();
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const hour = now.getHours();
+
+      // Skip Sundays completely
+      if (dayOfWeek === 0) return;
+
+      const todayString = now.toISOString().split('T')[0];
+      const lastReset = localStorage.getItem('attendanceSync_lastResetDate');
+
+      // Reset past 14:00 (2:00 PM) if not reset today
+      if (hour >= 14 && lastReset !== todayString) {
+        let hasChanges = false;
+        students = students.map(s => {
+          if (s.status !== 'pending') {
+            hasChanges = true;
+            return { ...s, status: 'pending', lastUpdated: Date.now() };
+          }
+          return s;
+        });
+
+        localStorage.setItem('attendanceSync_lastResetDate', todayString);
+        if (hasChanges) {
+          syncData();
+        }
+      }
+    }
+
+    // 5. RENDERING & UI LOGIC
+    function render() {
+      renderSessionCard();
+      renderRoster();
+      renderAdminRoster();
+    }
+
+    function getStatusBadge(status) {
+      switch (status) {
+        case 'attending':
+          return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/30">
+                    🟢 Attending
+                  </span>`;
+        case 'not_attending':
+          return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/5 text-neutral-400 border border-white/10">
+                    🔴 Not Going
+                  </span>`;
+        default:
+          return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/5 text-neutral-300 border border-white/20">
+                    🟡 Pending
+                  </span>`;
+      }
+    }
+
+    function renderSessionCard() {
+      const card = document.getElementById('sessionCard');
+      const activeUser = students.find(s => s.id === activeUserId);
+
+      if (!activeUser) {
+        card.innerHTML = `
+          <div class="py-3">
+            <div class="w-12 h-12 rounded-full bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-3">
+              <i class="fa-solid fa-user text-neutral-400 text-lg"></i>
+            </div>
+            <h3 class="text-base font-bold text-white">No Active User</h3>
+            <p class="text-xs text-neutral-400 mt-1 mb-4">Tap your profile in the roster below to unlock your card.</p>
+          </div>
+        `;
+        return;
+      }
+
+      card.innerHTML = `
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+          <div class="text-left">
+            <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Active Session</span>
+            <h3 class="text-lg font-bold text-white leading-tight">${escapeHtml(activeUser.name)}</h3>
+          </div>
+          <button onclick="logout()" class="glass-btn px-3 py-1.5 rounded-full text-xs text-neutral-300 hover:text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-right-from-bracket text-xs"></i> Switch
+          </button>
+        </div>
+
+        <div>
+          <p class="text-xs text-neutral-400 mb-3 font-medium">Select your attendance status:</p>
+          <div class="grid grid-cols-3 gap-2">
+            
+            <button onclick="updateStatus('attending')" 
+                    class="glass-btn py-3 px-2 rounded-2xl flex flex-col items-center gap-1 ${activeUser.status === 'attending' ? 'btn-active-attending' : ''}">
+              <span class="text-base">🟢</span>
+              <span class="text-xs font-bold text-white">Attending</span>
+            </button>
+
+            <button onclick="updateStatus('pending')" 
+                    class="glass-btn py-3 px-2 rounded-2xl flex flex-col items-center gap-1 ${activeUser.status === 'pending' ? 'btn-active-attending' : ''}">
+              <span class="text-base">🟡</span>
+              <span class="text-xs font-bold text-white">Pending</span>
+            </button>
+
+            <button onclick="updateStatus('not_attending')" 
+                    class="glass-btn py-3 px-2 rounded-2xl flex flex-col items-center gap-1 ${activeUser.status === 'not_attending' ? 'btn-active-attending' : ''}">
+              <span class="text-base">🔴</span>
+              <span class="text-xs font-bold text-white">Not Going</span>
+            </button>
+
           </div>
         </div>
       `;
-    }).join('');
-
-    rosterEl.querySelectorAll(".roster-item").forEach(item => {
-      item.addEventListener("click", () => {
-        openLoginModal(item.getAttribute("data-id"));
-      });
-    });
-  }
-
-  if (!localStorage.getItem("frienzo_accounts")) {
-    localStorage.setItem("frienzo_accounts", JSON.stringify(DEFAULT_ACCOUNTS));
-  }
-  renderUI();
-
-  // Modal Backdrop Handling
-  function closeAllModals() {
-    document.querySelectorAll(".modal").forEach(m => m.classList.remove("show"));
-  }
-
-  document.querySelectorAll(".modal").forEach(modal => {
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        modal.classList.remove("show");
-      }
-    });
-  });
-
-  document.querySelectorAll("[data-close]").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const targetId = btn.getAttribute("data-close");
-      if (targetId) document.getElementById(targetId).classList.remove("show");
-    });
-  });
-
-  // Login Modal Logic
-  let targetLoginId = null;
-  const loginModal = document.getElementById("loginModal");
-  const loginPin = document.getElementById("loginPin");
-  const loginErr = document.getElementById("loginErr");
-
-  function openLoginModal(id) {
-    targetLoginId = id;
-    const user = getAccounts().find(a => a.id === id);
-    if (user) document.getElementById("loginTitle").textContent = `Login as ${user.name}`;
-    loginPin.value = "";
-    loginErr.classList.add("hidden");
-    closeAllModals();
-    loginModal.classList.add("show");
-    setTimeout(() => loginPin.focus(), 150);
-  }
-
-  function handleLoginSubmit() {
-    const pin = loginPin.value.trim();
-    const accounts = getAccounts();
-    const user = accounts.find(a => a.id === targetLoginId);
-    if (user && user.pin === pin) {
-      setLoggedInUser(user.id);
-      loginModal.classList.remove("show");
-      showToast(`Logged in as ${user.name}`);
-    } else {
-      loginErr.textContent = "Incorrect PIN code.";
-      loginErr.classList.remove("hidden");
     }
-  }
 
-  document.getElementById("loginForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    handleLoginSubmit();
-  });
+    function renderRoster() {
+      const list = document.getElementById('rosterList');
+      document.getElementById('rosterCount').innerText = `${students.length} Members`;
 
-  // Sync Modal Logic
-  const syncModal = document.getElementById("syncModal");
-  const dbUrlInput = document.getElementById("dbUrl");
+      if (students.length === 0) {
+        list.innerHTML = `<div class="glass-panel rounded-2xl p-6 text-center text-xs text-neutral-500">No students registered yet. Use the admin panel to add profiles.</div>`;
+        return;
+      }
 
-  const savedUrl = localStorage.getItem("frienzo_db_url") || "";
-  if (savedUrl) dbUrlInput.value = savedUrl;
+      list.innerHTML = students.map(student => {
+        const isActive = student.id === activeUserId;
+        return `
+          <div onclick="promptUserPin('${student.id}')" 
+               class="glass-panel rounded-2xl p-3.5 flex items-center justify-between cursor-pointer hover:border-white/40 transition-all ${isActive ? 'border-white/50 bg-white/10' : ''}">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center font-bold text-white text-sm">
+                ${student.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white flex items-center gap-1.5">
+                  ${escapeHtml(student.name)}
+                  ${isActive ? '<i class="fa-solid fa-circle-check text-xs text-white"></i>' : ''}
+                </h4>
+                <p class="text-[10px] text-neutral-400">${isActive ? 'Currently unlocked' : 'Tap to unlock'}</p>
+              </div>
+            </div>
+            <div>
+              ${getStatusBadge(student.status)}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
-  document.getElementById("syncBtn").addEventListener("click", () => {
-    closeAllModals();
+    function renderAdminRoster() {
+      const adminList = document.getElementById('adminRosterList');
+      adminList.innerHTML = students.map(s => `
+        <div class="flex items-center justify-between bg-black/60 p-2.5 rounded-xl border border-white/10 text-xs">
+          <span class="text-white font-medium">${escapeHtml(s.name)}</span>
+          <button onclick="deleteStudent('${s.id}')" class="text-neutral-400 hover:text-white px-2 py-1"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      `).join('');
+    }
+
+    // 6. USER INTERACTIONS
+    function promptUserPin(userId) {
+      if (activeUserId === userId) return;
+      selectedUserForPin = userId;
+      const user = students.find(s => s.id === userId);
+      document.getElementById('pinUserTitle').innerText = `Unlock ${user.name}`;
+      document.getElementById('pinInput').value = '';
+      openModal('pinModal');
+      setTimeout(() => document.getElementById('pinInput').focus(), 100);
+    }
+
+    function submitPin() {
+      const pin = document.getElementById('pinInput').value;
+      const user = students.find(s => s.id === selectedUserForPin);
+
+      if (user && user.pin === pin) {
+        activeUserId = user.id;
+        localStorage.setItem('attendanceSync_activeUser', activeUserId);
+        closeModal('pinModal');
+        render();
+      } else {
+        alert('Incorrect 4-Digit PIN. Please try again.');
+      }
+    }
+
+    function updateStatus(newStatus) {
+      if (!activeUserId) return;
+
+      students = students.map(s => {
+        if (s.id === activeUserId) {
+          return { ...s, status: newStatus, lastUpdated:
