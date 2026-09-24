@@ -124,7 +124,7 @@ body {
   <div class="glass p-6 w-full max-w-md">
     <h2 class="text-lg font-semibold mb-1">Device sync</h2>
     <p class="text-slate-400 text-sm mb-4">Paste your Firebase Realtime Database URL so this device shows the same statuses as everyone else. Choose "This device only" to keep data on this phone.</p>
-    <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://your-project-default-rtdb.firebaseio.com" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app" autocomplete="off" autocapitalize="off" spellcheck="false">
     <p id="syncErr" class="text-xs mt-2 hidden" style="color:#ff8080"></p>
     <p class="text-slate-500 text-xs mt-2">In Firebase, set the database rules to allow read and write on <code>attendance</code>.</p>
     <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
@@ -214,11 +214,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (rosterCountEl) rosterCountEl.textContent = `${accounts.length} members`;
     if (rosterEl) {
       rosterEl.innerHTML = accounts.length ? accounts.map(acc => `
-        <div class="row">
-          <div class="av">${acc.name.charAt(0)}</div>
-          <div class="wt">
-            <span class="nm">${acc.name}</span>
-            <span class="sb">@${acc.id}</span>
+        <div class="row flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
+          <div class="av w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-semibold text-sm">${acc.name.charAt(0)}</div>
+          <div class="wt flex flex-col">
+            <span class="nm font-medium text-sm">${acc.name}</span>
+            <span class="sb text-xs text-slate-400">@${acc.id}</span>
           </div>
         </div>
       `).join('') : '<p class="text-sm text-slate-400 text-center py-4">No accounts found.</p>';
@@ -253,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const syncDot = document.getElementById("syncDot");
   const syncErr = document.getElementById("syncErr");
 
-  // UPDATED DEFAULT REGIONAL FIREBASE URL CONFIGURATION
+  // DEFAULT REGIONAL FIREBASE URL CONFIGURATION
   const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.asia-southeast1.firebasedatabase.app/";
   
   if (!localStorage.getItem("frienzo_db_url")) {
@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // "Connect" button handler
+  // "Connect" button handler with updated validation to support firebasedatabase.app
   if (syncSave) {
     syncSave.addEventListener("click", () => {
       const url = dbUrlInput ? dbUrlInput.value.trim() : "";
@@ -309,9 +309,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         return;
       }
-      if (!url.startsWith("https://") || !url.includes("firebasedatabase.app")) {
+      if (!url.startsWith("https://") || (!url.includes("firebaseio.com") && !url.includes("firebasedatabase.app"))) {
         if (syncErr) {
-          syncErr.textContent = "URL should look like: https://your-app-default-rtdb.asia-southeast1.firebasedatabase.app/";
+          syncErr.textContent = "URL should look like: https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app/";
           syncErr.classList.remove("hidden");
         }
         return;
@@ -382,14 +382,14 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         <div class="flex gap-2 mt-1">
           <input type="text" class="inp !mb-0 text-xs py-1 px-2 rename-input" value="${acc.name}" placeholder="New name">
-          <button class="btn ghost text-xs py-1 px-3 rename-btn">Rename</button>
+          <button class="btn ghost text-xs py-1 px-3 rename-btn" type="button">Rename</button>
         </div>
         <div class="flex gap-2 mt-1">
           <input type="password" inputmode="numeric" maxlength="4" class="inp !mb-0 text-xs py-1 px-2 pin-input" placeholder="New 4-digit PIN">
-          <button class="btn ghost text-xs py-1 px-3 pin-btn">Change PIN</button>
+          <button class="btn ghost text-xs py-1 px-3 pin-btn" type="button">Change PIN</button>
         </div>
         <div class="flex justify-end mt-1">
-          <button class="btn danger text-xs py-1 px-3 remove-btn">Remove Account</button>
+          <button class="btn danger text-xs py-1 px-3 remove-btn" type="button">Remove Account</button>
         </div>
       </div>
     `).join('');
