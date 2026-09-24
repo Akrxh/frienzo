@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AttendanceSync</title>
+  <title>AttendanceSync - Manual Firebase Connect</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -31,7 +31,7 @@
   </script>
 
   <style>
-    /* Global Touch & Tap Fixes */
+    /* Global Touch & Interaction Optimizations */
     * {
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
@@ -45,7 +45,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* Glassmorphism styling */
+    /* iOS Glassmorphism Card Styling */
     .glass-panel {
       background: rgba(255, 255, 255, 0.06);
       backdrop-filter: blur(25px);
@@ -53,6 +53,7 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
+    /* Transparent iOS 26 Glass Buttons */
     .glass-btn {
       background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(16px);
@@ -67,7 +68,7 @@
       background: rgba(255, 255, 255, 0.22);
     }
 
-    /* Active indicator for selected buttons */
+    /* Selected Status Button Highlight */
     .btn-active-attending {
       background: rgba(255, 255, 255, 0.25) !important;
       border-color: rgba(255, 255, 255, 0.8) !important;
@@ -77,7 +78,7 @@
 </head>
 <body class="flex flex-col min-h-screen justify-between p-4 sm:p-6 max-w-lg mx-auto">
 
-  <!-- HEADER -->
+  <!-- APP HEADER -->
   <header class="flex justify-between items-center mb-6 pt-2">
     <div>
       <h1 class="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
@@ -85,19 +86,21 @@
       </h1>
       <p class="text-xs text-neutral-400 mt-0.5">Daily Attendance Network</p>
     </div>
+    
+    <!-- Sync Button to trigger Manual Database Config Modal -->
     <button type="button" onclick="openModal('syncModal')" class="glass-btn px-3 py-1.5 rounded-full text-xs font-semibold text-neutral-200 flex items-center gap-2">
-      <i class="fa-solid fa-wifi text-neutral-300"></i>
-      <span id="syncStatusText">Syncing...</span>
+      <i class="fa-solid fa-database text-neutral-300"></i>
+      <span id="syncStatusText">Connect DB</span>
     </button>
   </header>
 
-  <!-- MAIN CONTENT AREA -->
+  <!-- MAIN CONTENT CONTAINER -->
   <main class="flex-1 space-y-6">
 
     <!-- ACTIVE USER SESSION CARD -->
     <section>
       <div id="sessionCard" class="glass-panel rounded-3xl p-5 text-center shadow-2xl relative overflow-hidden">
-        <!-- Rendered dynamically -->
+        <!-- Dynamic active session state loaded via JavaScript -->
       </div>
     </section>
 
@@ -109,7 +112,7 @@
       </div>
 
       <div id="rosterList" class="space-y-2.5">
-        <!-- Rendered dynamically -->
+        <!-- Dynamic student roster loaded via JavaScript -->
       </div>
     </section>
 
@@ -122,7 +125,7 @@
     </button>
   </footer>
 
-  <!-- MODAL: PIN AUTHENTICATION -->
+  <!-- MODAL 1: PIN AUTHENTICATION -->
   <div id="pinModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
     <div class="glass-panel w-full max-w-xs rounded-3xl p-6 text-center shadow-2xl">
       <div class="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-3">
@@ -141,33 +144,40 @@
     </div>
   </div>
 
-  <!-- MODAL: SYNC SETTINGS -->
+  <!-- MODAL 2: MANUAL FIREBASE DATABASE CONNECT -->
   <div id="syncModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
     <div class="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl">
       <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
-        <i class="fa-solid fa-database text-neutral-300"></i> Database Endpoint
+        <i class="fa-solid fa-database text-neutral-300"></i> Database Sync
       </h3>
-      <p class="text-xs text-neutral-400 mb-4">Firebase Realtime Database URL for multi-device sync.</p>
+      <p class="text-xs text-neutral-400 mb-4">Enter a manual Firebase Realtime Database URL to connect all devices live.</p>
 
-      <label class="block text-xs font-semibold text-neutral-300 mb-1">Database URL</label>
-      <input type="text" id="dbUrlInput" placeholder="https://..." 
-             class="w-full text-xs bg-black/60 border border-white/20 rounded-xl p-3 text-white focus:outline-none focus:border-white mb-4 font-mono">
+      <!-- Manual URL Input Field -->
+      <label class="block text-xs font-semibold text-neutral-300 mb-1">Firebase Database URL</label>
+      <input type="url" id="dbUrlInput" placeholder="https://your-app.firebasedatabase.app/" 
+             class="w-full text-xs bg-black/60 border border-white/20 rounded-xl p-3 text-white focus:outline-none focus:border-white mb-2 font-mono selection:bg-white selection:text-black">
 
+      <!-- Status Indicator Feedback Box -->
+      <div id="dbConnectionStatus" class="text-[11px] mb-4 min-h-[20px] font-mono text-neutral-400">
+        Status: Ready to connect
+      </div>
+
+      <!-- Control Buttons -->
       <div class="flex gap-2">
         <button type="button" onclick="closeModal('syncModal')" class="w-1/2 py-3 rounded-xl border border-white/15 text-xs text-neutral-300 active:bg-white/10 cursor-pointer">Cancel</button>
-        <button type="button" onclick="saveSyncSettings()" class="w-1/2 py-3 rounded-xl bg-white text-black font-bold text-xs active:bg-neutral-200 cursor-pointer">Save & Sync</button>
+        <button type="button" onclick="manualDatabaseConnect()" class="w-1/2 py-3 rounded-xl bg-white text-black font-bold text-xs active:bg-neutral-200 cursor-pointer">Connect DB</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: ADMIN ACCESS -->
+  <!-- MODAL 3: ADMIN ACCESS -->
   <div id="adminModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
     <div class="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl">
       
       <!-- Admin Verification View -->
       <div id="adminAuthView">
         <h3 class="text-lg font-bold text-white mb-1">Admin Verification</h3>
-        <p class="text-xs text-neutral-400 mb-4">Enter system passcode to manage users (Default: 1234)</p>
+        <p class="text-xs text-neutral-400 mb-4">Enter passcode to manage users (Default: 1234)</p>
         <input type="password" id="adminPassInput" pattern="[0-9]*" inputmode="numeric" placeholder="Passcode" 
                class="w-full text-center text-lg bg-black/60 border border-white/20 rounded-xl py-3 text-white focus:outline-none focus:border-white mb-4 font-mono">
         <div class="flex gap-2">
@@ -203,75 +213,127 @@
 
   <!-- APPLICATION LOGIC -->
   <script>
-    // 1. CONFIGURATION & STATE
+    // ==========================================
+    // 1. STATE & CONFIGURATION
+    // ==========================================
     const DEFAULT_DB_URL = "https://frienzo-originals-default-rtdb.asia-southeast1.firebasedatabase.app/";
     const ADMIN_PASSCODE = "1234";
 
+    // Load saved database URL from localStorage or fall back to default
     let dbUrl = localStorage.getItem('attendanceSync_dbUrl') || DEFAULT_DB_URL;
     let students = [];
     let activeUserId = localStorage.getItem('attendanceSync_activeUser') || null;
     let selectedUserForPin = null;
     let firebaseRef = null;
 
+    // Seed data used when database or local storage is initially empty
     const defaultStudents = [
       { id: '101', name: 'Alex', pin: '1111', status: 'pending', lastUpdated: Date.now() },
       { id: '102', name: 'Sam', pin: '2222', status: 'attending', lastUpdated: Date.now() },
       { id: '103', name: 'Jordan', pin: '3333', status: 'not_attending', lastUpdated: Date.now() }
     ];
 
+    // ==========================================
     // 2. INITIALIZATION
+    // ==========================================
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('dbUrlInput').value = dbUrl;
-      initFirebase();
+      initFirebase(dbUrl);
       checkAutoReset();
-      setInterval(checkAutoReset, 60000);
+      setInterval(checkAutoReset, 60000); // Check 2:00 PM auto-reset engine every minute
     });
 
-    // 3. FIREBASE DATABASE CONNECTION
-    function initFirebase() {
-      if (dbUrl) {
-        try {
-          if (!firebase.apps.length) {
-            firebase.initializeApp({ databaseURL: dbUrl });
-          } else {
-            firebase.app().delete().then(() => {
-              firebase.initializeApp({ databaseURL: dbUrl });
-            });
-          }
-          
-          firebaseRef = firebase.database().ref('attendance_roster');
-          
-          firebaseRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-              students = Array.isArray(data) ? data : Object.values(data);
-              saveLocalBackup();
-              render();
-            } else {
-              firebaseRef.set(defaultStudents);
-            }
-          });
+    // ==========================================
+    // 3. FIREBASE MANUAL CONNECTION ENGINE
+    // ==========================================
+    /**
+     * Initializes or re-initializes Firebase connection with the provided URL
+     * @param {string} urlToConnect - The Firebase Realtime Database URL
+     */
+    function initFirebase(urlToConnect) {
+      const statusElement = document.getElementById('dbConnectionStatus');
+      const headerStatus = document.getElementById('syncStatusText');
 
-          document.getElementById('syncStatusText').innerText = 'Connected';
-        } catch (e) {
-          console.warn("Firebase initialization error. Using local backup.", e);
-          loadLocalBackup();
-          document.getElementById('syncStatusText').innerText = 'Local Mode';
-        }
-      } else {
+      if (!urlToConnect) {
         loadLocalBackup();
-        document.getElementById('syncStatusText').innerText = 'Local Mode';
+        if (statusElement) statusElement.innerText = "Status: No URL provided. Running in Local Mode.";
+        if (headerStatus) headerStatus.innerText = "Local Mode";
+        return;
+      }
+
+      try {
+        if (statusElement) statusElement.innerText = "Status: Connecting to database...";
+        
+        // Remove active listeners if switching databases
+        if (firebaseRef) {
+          firebaseRef.off();
+        }
+
+        // Delete existing app instance to allow manual URL re-initialization
+        if (firebase.apps.length) {
+          firebase.app().delete();
+        }
+
+        // Re-initialize Firebase with updated database URL
+        firebase.initializeApp({ databaseURL: urlToConnect });
+        firebaseRef = firebase.database().ref('attendance_roster');
+
+        // Set up real-time listener
+        firebaseRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            students = Array.isArray(data) ? data : Object.values(data);
+            saveLocalBackup();
+            render();
+          } else {
+            // Seed default students if database endpoint is empty
+            firebaseRef.set(defaultStudents);
+          }
+
+          if (statusElement) statusElement.innerHTML = `<span class="text-emerald-400">✓ Successfully connected!</span>`;
+          if (headerStatus) headerStatus.innerText = "Connected";
+        }, (error) => {
+          console.warn("Firebase listener error:", error);
+          if (statusElement) statusElement.innerHTML = `<span class="text-rose-400">✗ Connection error. Check database rules.</span>`;
+          if (headerStatus) headerStatus.innerText = "Error";
+          loadLocalBackup();
+        });
+
+      } catch (err) {
+        console.error("Firebase Initialization Exception:", err);
+        if (statusElement) statusElement.innerHTML = `<span class="text-rose-400">✗ Invalid Firebase URL format.</span>`;
+        if (headerStatus) headerStatus.innerText = "Invalid URL";
+        loadLocalBackup();
       }
     }
 
-    function saveSyncSettings() {
+    /**
+     * Triggered manually when the user clicks "Connect DB" in the Sync Modal
+     */
+    function manualDatabaseConnect() {
       const inputUrl = document.getElementById('dbUrlInput').value.trim();
+
+      // Basic URL format validation
+      if (inputUrl && !inputUrl.startsWith('https://')) {
+        alert('Please enter a valid URL starting with https://');
+        return;
+      }
+
       dbUrl = inputUrl;
       localStorage.setItem('attendanceSync_dbUrl', dbUrl);
-      closeModal('syncModal');
-      initFirebase();
+      
+      // Attempt manual re-connection
+      initFirebase(dbUrl);
+
+      // Close modal after brief delay to show visual feedback
+      setTimeout(() => {
+        closeModal('syncModal');
+      }, 800);
     }
 
+    // ==========================================
+    // 4. STORAGE & SYNC HELPERS
+    // ==========================================
     function loadLocalBackup() {
       const stored = localStorage.getItem('attendanceSync_students');
       students = stored ? JSON.parse(stored) : defaultStudents;
@@ -290,10 +352,12 @@
       render();
     }
 
-    // 4. AUTOMATED 2:00 PM RESET ENGINE
+    // ==========================================
+    // 5. AUTOMATED 2:00 PM RESET ENGINE
+    // ==========================================
     function checkAutoReset() {
       const now = new Date();
-      const dayOfWeek = now.getDay();
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
       const hour = now.getHours();
 
       if (dayOfWeek === 0) return; // Skip Sundays
@@ -301,6 +365,7 @@
       const todayString = now.toISOString().split('T')[0];
       const lastReset = localStorage.getItem('attendanceSync_lastResetDate');
 
+      // Reset past 14:00 (2:00 PM) if reset hasn't run today
       if (hour >= 14 && lastReset !== todayString) {
         let hasChanges = false;
         students = students.map(s => {
@@ -318,7 +383,9 @@
       }
     }
 
-    // 5. RENDERING LOGIC
+    // ==========================================
+    // 6. RENDERING & UI LOGIC
+    // ==========================================
     function render() {
       renderSessionCard();
       renderRoster();
@@ -389,83 +456,4 @@
             <button type="button" onclick="updateStatus('not_attending')" 
                     class="glass-btn py-3 px-2 rounded-2xl flex flex-col items-center gap-1 ${activeUser.status === 'not_attending' ? 'btn-active-attending' : ''}">
               <span class="text-base">🔴</span>
-              <span class="text-xs font-bold text-white">Not Going</span>
-            </button>
-
-          </div>
-        </div>
-      `;
-    }
-
-    function renderRoster() {
-      const list = document.getElementById('rosterList');
-      document.getElementById('rosterCount').innerText = `${students.length} Members`;
-
-      if (students.length === 0) {
-        list.innerHTML = `<div class="glass-panel rounded-2xl p-6 text-center text-xs text-neutral-500">No students registered yet.</div>`;
-        return;
-      }
-
-      list.innerHTML = students.map(student => {
-        const isActive = student.id === activeUserId;
-        return `
-          <button type="button" onclick="promptUserPin('${student.id}')" 
-                  class="w-full text-left glass-panel rounded-2xl p-3.5 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-all ${isActive ? 'border-white/50 bg-white/10' : ''}">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center font-bold text-white text-sm">
-                ${student.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h4 class="text-sm font-bold text-white flex items-center gap-1.5">
-                  ${escapeHtml(student.name)}
-                  ${isActive ? '<i class="fa-solid fa-circle-check text-xs text-white"></i>' : ''}
-                </h4>
-                <p class="text-[10px] text-neutral-400">${isActive ? 'Currently unlocked' : 'Tap to unlock'}</p>
-              </div>
-            </div>
-            <div>
-              ${getStatusBadge(student.status)}
-            </div>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function renderAdminRoster() {
-      const adminList = document.getElementById('adminRosterList');
-      adminList.innerHTML = students.map(s => `
-        <div class="flex items-center justify-between bg-black/60 p-2.5 rounded-xl border border-white/10 text-xs">
-          <span class="text-white font-medium">${escapeHtml(s.name)}</span>
-          <button type="button" onclick="deleteStudent('${s.id}')" class="text-neutral-400 hover:text-white px-2 py-1 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      `).join('');
-    }
-
-    // 6. USER INTERACTIONS
-    function promptUserPin(userId) {
-      if (activeUserId === userId) return;
-      selectedUserForPin = userId;
-      const user = students.find(s => s.id === userId);
-      document.getElementById('pinUserTitle').innerText = `Unlock ${user.name}`;
-      document.getElementById('pinInput').value = '';
-      openModal('pinModal');
-      setTimeout(() => document.getElementById('pinInput').focus(), 150);
-    }
-
-    function submitPin() {
-      const pin = document.getElementById('pinInput').value;
-      const user = students.find(s => s.id === selectedUserForPin);
-
-      if (user && user.pin === pin) {
-        activeUserId = user.id;
-        localStorage.setItem('attendanceSync_activeUser', activeUserId);
-        closeModal('pinModal');
-        render();
-      } else {
-        alert('Incorrect 4-Digit PIN. Please try again.');
-      }
-    }
-
-    function updateStatus(newStatus) {
-      if (!activeUserId) return;
-
+              <span class="text-xs fon
