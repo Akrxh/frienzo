@@ -193,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // DEFAULT FIREBASE URL CONFIGURATION
   const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.firebaseio.com";
   
-  // Check if saved value exists in localStorage; otherwise set default automatically
   if (!localStorage.getItem("frienzo_db_url")) {
     localStorage.setItem("frienzo_db_url", DEFAULT_DB_URL);
   }
@@ -277,6 +276,30 @@ document.addEventListener("DOMContentLoaded", () => {
         logoClicks = 0;
         closeAllModals();
         adminModal.classList.add("show");
+      }
+    });
+  }
+
+  // Admin Passcode Verification Handler
+  const adminGo = document.getElementById("adminGo");
+  const adminPass = document.getElementById("adminPass");
+  const adminErr = document.getElementById("adminErr");
+  const adminGate = document.getElementById("adminGate");
+  const adminPanel = document.getElementById("adminPanel");
+
+  if (adminGo && adminPass) {
+    adminGo.addEventListener("click", () => {
+      const enteredPass = adminPass.value.trim();
+      if (enteredPass === "260885") {
+        if (adminErr) adminErr.classList.add("hidden");
+        if (adminGate) adminGate.classList.add("hidden");
+        if (adminPanel) adminPanel.classList.remove("hidden");
+        adminPass.value = "";
+      } else {
+        if (adminErr) {
+          adminErr.textContent = "Incorrect passcode.";
+          adminErr.classList.remove("hidden");
+        }
       }
     });
   }
