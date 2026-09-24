@@ -4,30 +4,35 @@
 <meta charset="utf-8">
 <meta name="theme-color" content="#000000">
 <meta name="color-scheme" content="dark">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Frienzo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Frienzo — Attendance Tracker</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --tx: #fff;
+  --tx: #ffffff;
   --mu: rgba(255,255,255,.58);
-  --mu2: rgba(255,255,255,.4);
+  --mu2: rgba(255,255,255,.38);
   --line: rgba(255,255,255,.14);
-  --line2: rgba(255,255,255,.26);
+  --line2: rgba(255,255,255,.24);
   --f: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { min-height: 100%; overflow-x: hidden; touch-action: manipulation; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+input { user-select: auto !important; }
+
+html, body { 
+  min-height: 100%; 
+  overflow-x: hidden; 
+  touch-action: manipulation; 
+  background-color: #000;
+  color: var(--tx);
+  font-family: var(--f);
+  -webkit-font-smoothing: antialiased;
+}
 
 body {
-  margin: 0;
-  font-family: var(--f);
-  color: var(--tx);
-  background: #000;
-  -webkit-font-smoothing: antialiased;
   background-image: radial-gradient(720px 500px at 50% -14%, rgba(255,255,255,.14), transparent 70%);
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -37,49 +42,53 @@ body {
 .top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
 
 .brand { display: flex; flex-direction: column; gap: .15rem; }
-.mark { font-size: 1.3rem; font-weight: 600; letter-spacing: -.04em; padding: 0; line-height: 1.1; background: none; border: 0; color: var(--tx); font-family: var(--f); cursor: pointer; }
+.mark { font-size: 1.3rem; font-weight: 600; letter-spacing: -.04em; padding: 0; line-height: 1.1; background: none; border: 0; color: var(--tx); font-family: var(--f); cursor: pointer; text-align: left; }
 .sub { margin: 0; font-size: .72rem; color: var(--mu2); letter-spacing: .03em; font-weight: 400; }
 
-.pill { display: flex; align-items: center; gap: .5rem; padding: .5rem .95rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .78rem var(--f); cursor: pointer; user-select: none; }
-.pill:active { transform: scale(.95); background: rgba(255,255,255,.2); }
+.pill { display: flex; align-items: center; gap: .5rem; padding: .5rem .95rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .78rem var(--f); cursor: pointer; }
+.pill:active { transform: scale(.95); background: rgba(255,255,255,.18); }
 
-.sd { width: .5rem; height: .5rem; border-radius: 50%; background: rgba(255,255,255,.3); }
-.sd.on { background: #fff; box-shadow: 0 0 10px #fff; }
+.sd { width: .5rem; height: .5rem; border-radius: 50%; background: rgba(255,255,255,.3); transition: background 0.3s, box-shadow 0.3s; }
+.sd.on { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
 
-.hero { padding: 3.2rem 0 2.3rem; }
+.hero { padding: 2.8rem 0 2rem; }
 .kicker { margin: 0; color: var(--mu); font-size: .68rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; }
 
-.day { font-family: var(--f); font-weight: 600; font-size: clamp(3.2rem, 16vw, 5.2rem); line-height: .98; letter-spacing: -.05em; margin: .4rem 0 .5rem; color: #fff; }
-.date { margin: 0; color: var(--mu); font-size: 1rem; font-weight: 400; }
+.day { font-family: var(--f); font-weight: 600; font-size: clamp(3rem, 15vw, 4.8rem); line-height: .98; letter-spacing: -.05em; margin: .4rem 0 .5rem; color: #fff; }
+.date { margin: 0; color: var(--mu); font-size: .95rem; font-weight: 400; }
 
-.card { position: relative; background: rgba(255,255,255,.045); border: 1px solid var(--line); border-radius: 1.9rem; padding: 1.2rem; margin-bottom: 1rem; }
+.card { position: relative; background: rgba(255,255,255,.045); border: 1px solid var(--line); border-radius: 1.8rem; padding: 1.2rem; margin-bottom: 1rem; backdrop-filter: blur(20px); }
 
 .rh { padding: .2rem .3rem .9rem; display: flex; align-items: baseline; justify-content: space-between; }
-.rh h2 { margin: 0; font-family: var(--f); font-weight: 600; letter-spacing: -.03em; font-size: 1.3rem; }
+.rh h2 { margin: 0; font-family: var(--f); font-weight: 600; letter-spacing: -.03em; font-size: 1.25rem; }
 .rh span { color: var(--mu); font-size: .78rem; }
 
-.foot-note { text-align: center; color: var(--mu2); font-size: .7rem; margin: 2rem 0 0; line-height: 1.5; }
+.foot-note { text-align: center; color: var(--mu2); font-size: .72rem; margin: 2rem 0 0; line-height: 1.5; }
 
-.glass { background: rgba(26,26,28,.96); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.8); }
-.inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); margin-bottom: 0.75rem; }
-.inp:focus { border-color: rgba(255,255,255,.55); }
+.glass { background: rgba(20,20,22,.95); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.85); backdrop-filter: blur(25px); }
+.inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); margin-bottom: 0.75rem; transition: border-color 0.2s; }
+.inp:focus { border-color: rgba(255,255,255,.6); }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 999px; font: 600 0.9rem var(--f); background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; user-select: none; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 999px; font: 600 0.88rem var(--f); background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; transition: transform 0.1s, opacity 0.1s; }
 .btn:active { transform: scale(0.96); opacity: 0.85; }
 
 .btn.ghost { background: rgba(255,255,255,0.08); border-color: var(--line); color: #fff; }
 .btn.ghost:active { background: rgba(255,255,255,0.2); }
 
-.btn.danger { background: rgba(255,60,60,0.2); border-color: rgba(255,60,60,0.4); color: #ff8080; }
+.btn.danger { background: rgba(255,60,60,0.18); border-color: rgba(255,60,60,0.35); color: #ff8080; }
+.btn.danger:active { background: rgba(255,60,60,0.3); }
 
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,.8); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 100; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.82); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 100; opacity: 0; transition: opacity 0.2s ease; }
 .modal.top { align-items: flex-start; padding-top: max(8vh, env(safe-area-inset-top, 0px)); }
-.modal.show { display: flex; }
+.modal.show { display: flex; opacity: 1; }
 
-.roster-item { cursor: pointer; transition: background 0.15s ease; border-radius: 1rem; padding: 0.5rem; margin: 0.15rem 0; }
-.roster-item:active { background: rgba(255,255,255,0.08); }
+.roster-item { cursor: pointer; transition: background 0.15s ease, transform 0.1s; border-radius: 1.1rem; padding: 0.65rem 0.75rem; margin: 0.1rem 0; }
+.roster-item:active { background: rgba(255,255,255,0.09); transform: scale(0.99); }
 
-.admin-account-item { display: flex; flex-direction: column; gap: 0.5rem; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 1rem; padding: 0.85rem; margin-bottom: 0.75rem; }
+.admin-account-item { display: flex; flex-direction: column; gap: 0.5rem; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 1.1rem; padding: 0.85rem; margin-bottom: 0.75rem; }
+
+#toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #fff; color: #000; padding: 0.6rem 1.2rem; border-radius: 999px; font: 600 0.82rem var(--f); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 200; opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 </style>
 </head>
 <body>
@@ -90,53 +99,53 @@ body {
       <p class="sub">Made with love by Tryin'</p>
     </div>
     <div class="flex items-center gap-2">
-      <button id="sessionToggleBtn" class="pill !bg-white/10" type="button">Check In</button>
+      <button id="sessionToggleBtn" class="pill !bg-white/10" type="button">Sign In</button>
       <button id="syncBtn" class="pill" type="button">
         <span id="syncDot" class="sd"></span>
-        <span id="syncTxt">Sync</span>
+        <span id="syncTxt">Local</span>
       </button>
     </div>
   </header>
 
   <section class="hero">
     <p class="kicker">Attendance Status</p>
-    <h1 id="dayName" class="day"></h1>
-    <p id="dayDate" class="date"></p>
+    <h1 id="dayName" class="day">---</h1>
+    <p id="dayDate" class="date">---</p>
     <div id="userGreeting" class="mt-4 text-sm text-slate-300"></div>
   </section>
 
   <section class="card">
     <div class="rh">
       <h2>Class roster & Status</h2>
-      <span id="rosterCount"></span>
+      <span id="rosterCount">0 members</span>
     </div>
     <div id="roster"></div>
   </section>
 
-  <p id="resetInfo" class="foot-note">Tap any account in the roster to log in with your PIN code.</p>
+  <p class="foot-note">Tap any account in the roster to sign in with your PIN code.</p>
 </main>
 
 <!-- Login Modal -->
 <div id="loginModal" class="modal">
-  <div class="glass p-6 w-full max-w-sm">
+  <div class="glass p-6 w-full max-w-sm" onclick="event.stopPropagation()">
     <h2 id="loginTitle" class="text-lg font-semibold mb-1">Member Login</h2>
     <p class="text-slate-400 text-sm mb-4">Enter your 4-digit code to log in.</p>
     <input id="loginPin" type="password" inputmode="numeric" maxlength="4" class="inp" placeholder="4-Digit PIN" autocomplete="off">
-    <p id="loginErr" class="text-xs mt-2 hidden" style="color:#ff8080"></p>
-    <div class="flex gap-2 mt-4 justify-end">
+    <p id="loginErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
+    <div class="flex gap-2 mt-5 justify-end">
       <button class="btn ghost" data-close="loginModal" type="button">Cancel</button>
       <button id="loginGo" class="btn" type="button">Login</button>
     </div>
   </div>
 </div>
 
-<!-- Sync modal -->
+<!-- Sync Modal -->
 <div id="syncModal" class="modal top">
-  <div class="glass p-6 w-full max-w-md">
+  <div class="glass p-6 w-full max-w-md" onclick="event.stopPropagation()">
     <h2 class="text-lg font-semibold mb-1">Device sync</h2>
     <p class="text-slate-400 text-sm mb-4">Firebase Realtime Database URL for cross-device syncing.</p>
     <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://..." autocomplete="off">
-    <p id="syncErr" class="text-xs mt-2 hidden" style="color:#ff8080"></p>
+    <p id="syncErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
     <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
       <button id="syncClose" class="btn ghost" type="button">Close</button>
       <button id="syncOff" class="btn ghost" type="button">Local only</button>
@@ -145,15 +154,15 @@ body {
   </div>
 </div>
 
-<!-- Admin modal -->
+<!-- Admin Modal -->
 <div id="adminModal" class="modal">
-  <div class="glass p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+  <div class="glass p-6 w-full max-w-md max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
     <div id="adminGate">
       <h2 class="text-lg font-semibold mb-1">Admin access</h2>
       <p class="text-slate-400 text-sm mb-4">Enter the admin passcode.</p>
       <input id="adminPass" type="password" inputmode="numeric" class="inp" placeholder="Passcode" autocomplete="off">
-      <p id="adminErr" class="text-xs mt-2 hidden" style="color:#ff8080"></p>
-      <div class="flex gap-2 mt-4 justify-end">
+      <p id="adminErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
+      <div class="flex gap-2 mt-5 justify-end">
         <button class="btn ghost" data-close="adminModal" type="button">Cancel</button>
         <button id="adminGo" class="btn" type="button">Unlock</button>
       </div>
@@ -166,7 +175,7 @@ body {
       <div class="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
         <h3 class="font-semibold text-sm mb-3">Add New Account</h3>
         <input id="newAccName" class="inp" type="text" placeholder="Full Name" autocomplete="off">
-        <input id="newAccUser" class="inp" type="text" placeholder="Username (e.g. john)" autocomplete="off">
+        <input id="newAccUser" class="inp" type="text" placeholder="Username (e.g. alex)" autocomplete="off">
         <input id="newAccPin" class="inp" type="password" inputmode="numeric" maxlength="4" placeholder="4-Digit PIN Code" autocomplete="off">
         <button id="addAccBtn" class="btn w-full mt-1" type="button">Add Account</button>
       </div>
@@ -178,21 +187,33 @@ body {
   </div>
 </div>
 
+<!-- Toast element -->
+<div id="toast"></div>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  // Date Setup
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const today = new Date();
   document.getElementById("dayName").textContent = days[today.getDay()];
   document.getElementById("dayDate").textContent = today.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
 
+  // Default accounts
   const DEFAULT_ACCOUNTS = [
-    { id: "user1", name: "Alex Turner", pin: "1234", status: "absent", time: "" },
-    { id: "user2", name: "Jessica Smith", pin: "5678", status: "absent", time: "" }
+    { id: "alex", name: "Alex Turner", pin: "1234", status: "absent", time: "" },
+    { id: "jessica", name: "Jessica Smith", pin: "5678", status: "absent", time: "" }
   ];
 
   const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.asia-southeast1.firebasedatabase.app/";
   if (!localStorage.getItem("frienzo_db_url")) {
     localStorage.setItem("frienzo_db_url", DEFAULT_DB_URL);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2500);
   }
 
   function getActiveDbUrl() {
@@ -202,7 +223,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getAccounts() {
     try {
-      return JSON.parse(localStorage.getItem("frienzo_accounts")) || DEFAULT_ACCOUNTS;
+      const stored = localStorage.getItem("frienzo_accounts");
+      return stored ? JSON.parse(stored) : DEFAULT_ACCOUNTS;
     } catch {
       return DEFAULT_ACCOUNTS;
     }
@@ -233,32 +255,60 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(accounts)
       });
+      updateSyncStatus(true);
     } catch (e) {
       console.error("Cloud push error:", e);
+      updateSyncStatus(false);
     }
   }
 
   async function pullFromCloud() {
     const dbUrl = getActiveDbUrl();
-    if (!dbUrl) return;
+    if (!dbUrl) {
+      updateSyncStatus(false);
+      return;
+    }
     try {
       const res = await fetch(dbUrl + "accounts.json");
       if (res.ok) {
         const data = await res.json();
-        if (data && Array.isArray(data)) {
-          if (JSON.stringify(getAccounts()) !== JSON.stringify(data)) {
-            localStorage.setItem("frienzo_accounts", JSON.stringify(data));
-            renderUI();
+        if (data) {
+          let remoteAccounts = Array.isArray(data) ? data : (typeof data === 'object' ? Object.values(data) : null);
+          if (remoteAccounts && Array.isArray(remoteAccounts)) {
+            if (JSON.stringify(getAccounts()) !== JSON.stringify(remoteAccounts)) {
+              localStorage.setItem("frienzo_accounts", JSON.stringify(remoteAccounts));
+              renderUI();
+            }
+            updateSyncStatus(true);
           }
         }
+      } else {
+        updateSyncStatus(false);
       }
     } catch (e) {
-      console.error("Cloud pull error:", e);
+      updateSyncStatus(false);
+    }
+  }
+
+  function updateSyncStatus(isOnline) {
+    const syncTxt = document.getElementById("syncTxt");
+    const syncDot = document.getElementById("syncDot");
+    const activeUrl = getActiveDbUrl();
+
+    if (!activeUrl) {
+      syncTxt.textContent = "Local";
+      syncDot.classList.remove("on");
+    } else if (isOnline) {
+      syncTxt.textContent = "Synced";
+      syncDot.classList.add("on");
+    } else {
+      syncTxt.textContent = "Offline";
+      syncDot.classList.remove("on");
     }
   }
 
   pullFromCloud();
-  setInterval(pullFromCloud, 5000);
+  setInterval(pullFromCloud, 4000);
 
   function renderUI() {
     renderRoster();
@@ -272,7 +322,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const accounts = getAccounts();
 
     if (!loggedId) {
-      greetingEl.innerHTML = `<span class="text-amber-400">Not logged in.</span> Tap your name below to sign in.`;
+      greetingEl.innerHTML = `<span class="text-amber-400">Not signed in.</span> Tap your name below to log in.`;
       toggleBtn.textContent = "Sign In";
       toggleBtn.onclick = () => {
         if (accounts.length > 0) openLoginModal(accounts[0].id);
@@ -281,12 +331,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const user = accounts.find(a => a.id === loggedId);
       if (user) {
         const isPresent = user.status === "present";
-        greetingEl.innerHTML = `Logged in as <b>${user.name}</b> — Status: <span class="${isPresent ? 'text-green-400' : 'text-slate-400'}">${isPresent ? 'Present (' + user.time + ')' : 'Absent'}</span>`;
+        greetingEl.innerHTML = `Signed in as <b>${user.name}</b> — Status: <span class="${isPresent ? 'text-green-400' : 'text-slate-400'}">${isPresent ? 'Present (' + user.time + ')' : 'Absent'}</span>`;
         toggleBtn.textContent = isPresent ? "Check Out" : "Check In";
         toggleBtn.onclick = async () => {
           user.status = isPresent ? "absent" : "present";
           user.time = isPresent ? "" : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           await saveAccounts(accounts);
+          showToast(isPresent ? "Checked Out" : "Checked In Successfully!");
         };
       } else {
         setLoggedInUser(null);
@@ -300,33 +351,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const loggedId = getLoggedInUser();
 
     document.getElementById("rosterCount").textContent = `${accounts.length} members`;
-    rosterEl.innerHTML = accounts.length ? accounts.map(acc => {
+    
+    if (!accounts.length) {
+      rosterEl.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">No accounts found.</p>`;
+      return;
+    }
+
+    rosterEl.innerHTML = accounts.map(acc => {
       const isPresent = acc.status === "present";
       const isMe = acc.id === loggedId;
       return `
-        <div class="roster-item flex items-center justify-between py-3 border-b border-white/5 last:border-0" data-id="${acc.id}">
+        <div class="roster-item flex items-center justify-between border-b border-white/5 last:border-0" data-id="${acc.id}">
           <div class="flex items-center gap-3 pointer-events-none">
-            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-semibold text-sm">${acc.name.charAt(0)}</div>
+            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-semibold text-sm text-white">${acc.name.charAt(0)}</div>
             <div class="flex flex-col">
-              <span class="font-medium text-sm flex items-center gap-2">
-                ${acc.name} ${isMe ? '<span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded text-white">You</span>' : ''}
+              <span class="font-medium text-sm flex items-center gap-1.5">
+                ${acc.name} ${isMe ? '<span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded text-white font-normal">You</span>' : ''}
               </span>
               <span class="text-xs text-slate-400">@${acc.id}</span>
             </div>
           </div>
           <div class="pointer-events-none">
-            <span class="text-xs px-2.5 py-1 rounded-full font-medium ${isPresent ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-white/5 text-slate-400 border border-white/10'}">
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 ${isPresent ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-white/5 text-slate-400 border border-white/10'}">
+              ${isPresent ? '<span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>' : ''}
               ${isPresent ? 'Present ' + (acc.time ? '· ' + acc.time : '') : 'Absent'}
             </span>
           </div>
         </div>
       `;
-    }).join('') : '<p class="text-sm text-slate-400 text-center py-4">No accounts found.</p>';
+    }).join('');
 
-    // Robust touch & click handling for list elements
     rosterEl.querySelectorAll(".roster-item").forEach(item => {
-      item.addEventListener("click", (e) => {
-        e.preventDefault();
+      item.addEventListener("click", () => {
         openLoginModal(item.getAttribute("data-id"));
       });
     });
@@ -337,6 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   renderUI();
 
+  // Modal interactions
   let targetLoginId = null;
   const loginModal = document.getElementById("loginModal");
   const loginPin = document.getElementById("loginPin");
@@ -350,25 +407,33 @@ document.addEventListener("DOMContentLoaded", () => {
     loginErr.classList.add("hidden");
     closeAllModals();
     loginModal.classList.add("show");
-    setTimeout(() => loginPin.focus(), 100);
+    setTimeout(() => loginPin.focus(), 150);
   }
 
-  document.getElementById("loginGo").addEventListener("click", () => {
+  function handleLoginSubmit() {
     const pin = loginPin.value.trim();
     const accounts = getAccounts();
     const user = accounts.find(a => a.id === targetLoginId);
     if (user && user.pin === pin) {
       setLoggedInUser(user.id);
       loginModal.classList.remove("show");
+      showToast(`Logged in as ${user.name}`);
     } else {
       loginErr.textContent = "Incorrect PIN code.";
       loginErr.classList.remove("hidden");
     }
-  });
+  }
+
+  document.getElementById("loginGo").addEventListener("click", handleLoginSubmit);
+  loginPin.addEventListener("keypress", (e) => { if (e.key === "Enter") handleLoginSubmit(); });
 
   function closeAllModals() {
     document.querySelectorAll(".modal").forEach(m => m.classList.remove("show"));
   }
+
+  document.querySelectorAll(".modal").forEach(modal => {
+    modal.addEventListener("click", () => closeAllModals());
+  });
 
   document.querySelectorAll("[data-close]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -376,17 +441,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Sync Modal Logic
   const syncModal = document.getElementById("syncModal");
   const dbUrlInput = document.getElementById("dbUrl");
-  const syncTxt = document.getElementById("syncTxt");
-  const syncDot = document.getElementById("syncDot");
 
   const savedUrl = localStorage.getItem("frienzo_db_url") || "";
-  if (savedUrl) {
-    dbUrlInput.value = savedUrl;
-    syncTxt.textContent = "Synced";
-    syncDot.classList.add("on");
-  }
+  if (savedUrl) dbUrlInput.value = savedUrl;
 
   document.getElementById("syncBtn").addEventListener("click", () => {
     closeAllModals();
@@ -397,73 +457,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("syncOff").addEventListener("click", () => {
     localStorage.removeItem("frienzo_db_url");
     dbUrlInput.value = "";
-    syncTxt.textContent = "Local";
-    syncDot.classList.remove("on");
+    updateSyncStatus(false);
     syncModal.classList.remove("show");
+    showToast("Switched to Local Mode");
   });
 
   document.getElementById("syncSave").addEventListener("click", async () => {
     const url = dbUrlInput.value.trim();
-    if (!url || !url.startsWith("https://")) {
-      const err = document.getElementById("syncErr");
-      err.textContent = "Enter a valid Firebase URL starting with https://";
-      err.classList.remove("hidden");
-      return;
-    }
-    localStorage.setItem("frienzo_db_url", url);
-    syncTxt.textContent = "Synced";
-    syncDot.classList.add("on");
-    syncModal.classList.remove("show");
-    await pullFromCloud();
-  });
-
-  let logoClicks = 0;
-  document.getElementById("logo").addEventListener("click", () => {
-    logoClicks++;
-    if (logoClicks >= 5) {
-      logoClicks = 0;
-      closeAllModals();
-      document.getElementById("adminModal").classList.add("show");
-    }
-  });
-
-  document.getElementById("adminGo").addEventListener("click", () => {
-    const pass = document.getElementById("adminPass").value.trim();
-    if (pass === "260885") {
-      document.getElementById("adminErr").classList.add("hidden");
-      document.getElementById("adminGate").classList.add("hidden");
-      document.getElementById("adminPanel").classList.remove("hidden");
-      document.getElementById("adminPass").value = "";
-      renderAdminAccounts();
-    } else {
-      const err = document.getElementById("adminErr");
-      err.textContent = "Incorrect passcode.";
-      err.classList.remove("hidden");
-    }
-  });
-
-  function renderAdminAccounts() {
-    const listEl = document.getElementById("adminAccountsList");
-    const accounts = getAccounts();
-    listEl.innerHTML = accounts.map(acc => `
-      <div class="admin-account-item" data-id="${acc.id}">
-        <div class="flex justify-between items-center">
-          <span class="font-semibold text-sm">${acc.name}</span>
-          <span class="text-xs text-slate-400">@${acc.id} (PIN: ${acc.pin})</span>
-        </div>
-        <div class="flex gap-2 mt-1">
-          <input type="text" class="inp !mb-0 text-xs py-1 px-2 rename-input" value="${acc.name}">
-          <button class="btn ghost text-xs py-1 px-3 rename-btn" type="button">Rename</button>
-        </div>
-        <div class="flex gap-2 mt-1">
-          <input type="password" inputmode="numeric" maxlength="4" class="inp !mb-0 text-xs py-1 px-2 pin-input" placeholder="New PIN">
-          <button class="btn ghost text-xs py-1 px-3 pin-btn" type="button">Change PIN</button>
-        </div>
-        <div class="flex justify-end mt-1">
-          <button class="btn danger text-xs py-1 px-3 remove-btn" type="button">Remove Account</button>
-        </div>
-      </div>
-    `).join('');
-
-    listEl.querySelectorAll(".admin-account-item").forEach(item => {
-      const id
+    if (!url || !url.startsWith("h
