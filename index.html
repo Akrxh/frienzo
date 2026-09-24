@@ -45,7 +45,7 @@ body {
 .mark { font-size: 1.3rem; font-weight: 600; letter-spacing: -.04em; padding: 0; line-height: 1.1; background: none; border: 0; color: var(--tx); font-family: var(--f); cursor: pointer; text-align: left; }
 .sub { margin: 0; font-size: .72rem; color: var(--mu2); letter-spacing: .03em; font-weight: 400; }
 
-.pill { display: flex; align-items: center; gap: .5rem; padding: .5rem .95rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .78rem var(--f); cursor: pointer; }
+.pill { display: flex; align-items: center; gap: .5rem; padding: .5rem .95rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .78rem var(--f); cursor: pointer; transition: transform 0.1s, background 0.15s; }
 .pill:active { transform: scale(.95); background: rgba(255,255,255,.18); }
 
 .sd { width: .5rem; height: .5rem; border-radius: 50%; background: rgba(255,255,255,.3); transition: background 0.3s, box-shadow 0.3s; }
@@ -65,12 +65,12 @@ body {
 
 .foot-note { text-align: center; color: var(--mu2); font-size: .72rem; margin: 2rem 0 0; line-height: 1.5; }
 
-.glass { background: rgba(20,20,22,.95); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.85); backdrop-filter: blur(25px); }
+.glass { position: relative; background: rgba(20,20,22,.95); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.85); backdrop-filter: blur(25px); pointer-events: auto; }
 .inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); margin-bottom: 0.75rem; transition: border-color 0.2s; }
 .inp:focus { border-color: rgba(255,255,255,.6); }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 999px; font: 600 0.88rem var(--f); background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; transition: transform 0.1s, opacity 0.1s; }
-.btn:active { transform: scale(0.96); opacity: 0.85; }
+.btn:active { transform: scale(0.95); opacity: 0.85; }
 
 .btn.ghost { background: rgba(255,255,255,0.08); border-color: var(--line); color: #fff; }
 .btn.ghost:active { background: rgba(255,255,255,0.2); }
@@ -122,63 +122,72 @@ body {
     <div id="roster"></div>
   </section>
 
-  <p class="foot-note">Tap any account in the roster to sign in with your PIN code.</p>
+  <p class="foot-note">
+    Tap any account in the roster to sign in with your PIN code.<br>
+    <button id="openAdminTrigger" type="button" class="underline text-slate-400 hover:text-white mt-2 inline-block">Admin Panel</button>
+  </p>
 </main>
 
 <!-- Login Modal -->
 <div id="loginModal" class="modal">
-  <div class="glass p-6 w-full max-w-sm" onclick="event.stopPropagation()">
-    <h2 id="loginTitle" class="text-lg font-semibold mb-1">Member Login</h2>
-    <p class="text-slate-400 text-sm mb-4">Enter your 4-digit code to log in.</p>
-    <input id="loginPin" type="password" inputmode="numeric" maxlength="4" class="inp" placeholder="4-Digit PIN" autocomplete="off">
-    <p id="loginErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
-    <div class="flex gap-2 mt-5 justify-end">
-      <button class="btn ghost" data-close="loginModal" type="button">Cancel</button>
-      <button id="loginGo" class="btn" type="button">Login</button>
-    </div>
+  <div class="glass p-6 w-full max-w-sm">
+    <form id="loginForm" action="javascript:void(0);">
+      <h2 id="loginTitle" class="text-lg font-semibold mb-1">Member Login</h2>
+      <p class="text-slate-400 text-sm mb-4">Enter your 4-digit code to log in.</p>
+      <input id="loginPin" type="password" inputmode="numeric" maxlength="4" class="inp" placeholder="4-Digit PIN" autocomplete="off">
+      <p id="loginErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
+      <div class="flex gap-2 mt-5 justify-end">
+        <button class="btn ghost" data-close="loginModal" type="button">Cancel</button>
+        <button id="loginGo" class="btn" type="submit">Login</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <!-- Sync Modal -->
 <div id="syncModal" class="modal top">
-  <div class="glass p-6 w-full max-w-md" onclick="event.stopPropagation()">
-    <h2 class="text-lg font-semibold mb-1">Device sync</h2>
-    <p class="text-slate-400 text-sm mb-4">Firebase Realtime Database URL for cross-device syncing.</p>
-    <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://..." autocomplete="off">
-    <p id="syncErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
-    <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
-      <button id="syncClose" class="btn ghost" type="button">Close</button>
-      <button id="syncOff" class="btn ghost" type="button">Local only</button>
-      <button id="syncSave" class="btn" type="button">Connect</button>
-    </div>
+  <div class="glass p-6 w-full max-w-md">
+    <form id="syncForm" action="javascript:void(0);">
+      <h2 class="text-lg font-semibold mb-1">Device sync</h2>
+      <p class="text-slate-400 text-sm mb-4">Firebase Realtime Database URL for cross-device syncing.</p>
+      <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://..." autocomplete="off">
+      <p id="syncErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
+      <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
+        <button id="syncClose" class="btn ghost" data-close="syncModal" type="button">Close</button>
+        <button id="syncOff" class="btn ghost" type="button">Local only</button>
+        <button id="syncSave" class="btn" type="submit">Connect</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <!-- Admin Modal -->
 <div id="adminModal" class="modal">
-  <div class="glass p-6 w-full max-w-md max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+  <div class="glass p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
     <div id="adminGate">
-      <h2 class="text-lg font-semibold mb-1">Admin access</h2>
-      <p class="text-slate-400 text-sm mb-4">Enter the admin passcode.</p>
-      <input id="adminPass" type="password" inputmode="numeric" class="inp" placeholder="Passcode" autocomplete="off">
-      <p id="adminErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
-      <div class="flex gap-2 mt-5 justify-end">
-        <button class="btn ghost" data-close="adminModal" type="button">Cancel</button>
-        <button id="adminGo" class="btn" type="button">Unlock</button>
-      </div>
+      <form id="adminGateForm" action="javascript:void(0);">
+        <h2 class="text-lg font-semibold mb-1">Admin access</h2>
+        <p class="text-slate-400 text-sm mb-4">Enter the admin passcode.</p>
+        <input id="adminPass" type="password" inputmode="numeric" class="inp" placeholder="Passcode" autocomplete="off">
+        <p id="adminErr" class="text-xs mt-1 hidden" style="color:#ff8080"></p>
+        <div class="flex gap-2 mt-5 justify-end">
+          <button class="btn ghost" data-close="adminModal" type="button">Cancel</button>
+          <button id="adminGo" class="btn" type="submit">Unlock</button>
+        </div>
+      </form>
     </div>
     <div id="adminPanel" class="hidden">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-semibold">Admin Panel</h2>
         <button class="btn ghost" data-close="adminModal" type="button">Close</button>
       </div>
-      <div class="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+      <form id="addAccForm" action="javascript:void(0);" class="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
         <h3 class="font-semibold text-sm mb-3">Add New Account</h3>
         <input id="newAccName" class="inp" type="text" placeholder="Full Name" autocomplete="off">
         <input id="newAccUser" class="inp" type="text" placeholder="Username (e.g. alex)" autocomplete="off">
         <input id="newAccPin" class="inp" type="password" inputmode="numeric" maxlength="4" placeholder="4-Digit PIN Code" autocomplete="off">
-        <button id="addAccBtn" class="btn w-full mt-1" type="button">Add Account</button>
-      </div>
+        <button id="addAccBtn" class="btn w-full mt-1" type="submit">Add Account</button>
+      </form>
       <div>
         <h3 class="font-semibold text-sm mb-3">Manage Existing Accounts</h3>
         <div id="adminAccountsList"></div>
@@ -187,7 +196,7 @@ body {
   </div>
 </div>
 
-<!-- Toast element -->
+<!-- Toast notification -->
 <div id="toast"></div>
 
 <script>
@@ -240,10 +249,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderUI();
   }
 
-  async function saveAccounts(accounts) {
+  function saveAccounts(accounts) {
     localStorage.setItem("frienzo_accounts", JSON.stringify(accounts));
     renderUI();
-    await pushToCloud(accounts);
+    pushToCloud(accounts);
   }
 
   async function pushToCloud(accounts) {
@@ -333,10 +342,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const isPresent = user.status === "present";
         greetingEl.innerHTML = `Signed in as <b>${user.name}</b> — Status: <span class="${isPresent ? 'text-green-400' : 'text-slate-400'}">${isPresent ? 'Present (' + user.time + ')' : 'Absent'}</span>`;
         toggleBtn.textContent = isPresent ? "Check Out" : "Check In";
-        toggleBtn.onclick = async () => {
+        toggleBtn.onclick = () => {
           user.status = isPresent ? "absent" : "present";
           user.time = isPresent ? "" : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          await saveAccounts(accounts);
+          saveAccounts(accounts);
           showToast(isPresent ? "Checked Out" : "Checked In Successfully!");
         };
       } else {
@@ -393,7 +402,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   renderUI();
 
-  // Modal interactions
+  // Modal Backdrop Handling
+  function closeAllModals() {
+    document.querySelectorAll(".modal").forEach(m => m.classList.remove("show"));
+  }
+
+  document.querySelectorAll(".modal").forEach(modal => {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("show");
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-close]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetId = btn.getAttribute("data-close");
+      if (targetId) document.getElementById(targetId).classList.remove("show");
+    });
+  });
+
+  // Login Modal Logic
   let targetLoginId = null;
   const loginModal = document.getElementById("loginModal");
   const loginPin = document.getElementById("loginPin");
@@ -424,21 +454,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  document.getElementById("loginGo").addEventListener("click", handleLoginSubmit);
-  loginPin.addEventListener("keypress", (e) => { if (e.key === "Enter") handleLoginSubmit(); });
-
-  function closeAllModals() {
-    document.querySelectorAll(".modal").forEach(m => m.classList.remove("show"));
-  }
-
-  document.querySelectorAll(".modal").forEach(modal => {
-    modal.addEventListener("click", () => closeAllModals());
-  });
-
-  document.querySelectorAll("[data-close]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.getElementById(btn.getAttribute("data-close")).classList.remove("show");
-    });
+  document.getElementById("loginForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    handleLoginSubmit();
   });
 
   // Sync Modal Logic
@@ -450,18 +468,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("syncBtn").addEventListener("click", () => {
     closeAllModals();
-    syncModal.classList.add("show");
-  });
-
-  document.getElementById("syncClose").addEventListener("click", () => syncModal.classList.remove("show"));
-  document.getElementById("syncOff").addEventListener("click", () => {
-    localStorage.removeItem("frienzo_db_url");
-    dbUrlInput.value = "";
-    updateSyncStatus(false);
-    syncModal.classList.remove("show");
-    showToast("Switched to Local Mode");
-  });
-
-  document.getElementById("syncSave").addEventListener("click", async () => {
-    const url = dbUrlInput.value.trim();
-    if (!url || !url.startsWith("h
