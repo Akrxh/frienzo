@@ -32,7 +32,7 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 .mark i{width:.7rem;height:.7rem;border-radius:50%;background:#fff;box-shadow:0 0 14px rgba(255,255,255,.7)}
 /* Liquid glass surfaces */
 .pill,.ghost-sm,.btn,.act,.card,.row,.seg3,.glass,.box,.arow,.inp,.pd{-webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%)}
-.pill{display:flex;align-items:center;gap:.5rem;padding:.5rem .95rem;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.09);color:var(--tx);font:500 .78rem var(--f);cursor:pointer;box-shadow:var(--spec),0 6px 20px rgba(0,0,0,.35);transition:background .25s,transform .15s}
+.pill{position:relative;z-index:5;touch-action:manipulation;display:flex;align-items:center;gap:.5rem;padding:.5rem .95rem;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.09);color:var(--tx);font:500 .78rem var(--f);cursor:pointer;box-shadow:var(--spec),0 6px 20px rgba(0,0,0,.35);transition:background .25s,transform .15s}
 .pill:hover{background:rgba(255,255,255,.15)}
 .pill:active{transform:scale(.96)}
 .sd{width:.5rem;height:.5rem;border-radius:50%;background:rgba(255,255,255,.3);transition:.2s}
@@ -111,10 +111,13 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 .shake{animation:sh .4s}
 @keyframes sh{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* FIX: modals no longer share the .top class with the header; own width + hidden rules so they work even if the Tailwind CDN is blocked */
+.hidden{display:none!important}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;padding:1rem;z-index:50}
-.modal.top{align-items:flex-start;padding-top:max(8vh,env(safe-area-inset-top,0px))}
+.modal.mtop{align-items:flex-start;padding-top:max(8vh,env(safe-area-inset-top,0px))}
 .modal.show{display:flex}
-.modal>div{max-height:calc(100dvh - 2rem);overflow-y:auto}
+.modal>div{width:100%;max-width:28rem;max-height:calc(100dvh - 2rem);overflow-y:auto;padding:1.5rem}
+#pinModal>div{max-width:20rem;text-align:center}
 .arow{display:flex;align-items:center;gap:.6rem;padding:.6rem .65rem;border:1px solid var(--line);border-radius:1.3rem;background:rgba(255,255,255,.05)}
 .arow .av{width:2.2rem;height:2.2rem;font-size:.8rem}
 .arow .nm{flex:1;min-width:0}
@@ -179,17 +182,19 @@ body{background-image:radial-gradient(720px 500px at 50% -14%,rgba(255,255,255,.
 /* Stability: no nested blur (fixes black screens on some phones) */
 .row,.seg3,.btn,.act,.ghost-sm,.box,.arow,.inp,.pd{-webkit-backdrop-filter:none;backdrop-filter:none}
 .modal{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.72)}
-.glass{background:rgba(26,26,28,.86)}
+.glass{background:rgba(26,26,28,.94)}
 body{background-attachment:scroll}
 .day{background:none;color:#fff;-webkit-text-fill-color:currentColor}
 @supports ((-webkit-background-clip:text) or (background-clip:text)){.day{background:linear-gradient(180deg,#fff 30%,rgba(255,255,255,.55));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}}
+/* Toast (own positioning, independent of Tailwind) */
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);padding:.5rem 1rem;font-size:.875rem;text-align:center;max-width:90vw;z-index:60}
 </style>
 </head>
 <body>
 <main class="wrap">
   <header class="top">
     <div class="brand"><button id="logo" class="mark" type="button" tabindex="-1" aria-label="Frienzo">Frienzo</button><p class="sub">Made with love by Tryin'</p></div>
-    <button id="syncBtn" class="pill" type="button" aria-label="Sync settings"><span id="syncDot" class="sd"></span><span id="syncTxt">This device</span></button>
+    <button id="syncBtn" class="pill" type="button" aria-label="Sync settings" onclick="openSync()"><span id="syncDot" class="sd"></span><span id="syncTxt">This device</span></button>
   </header>
 
   <section class="hero">
@@ -209,28 +214,28 @@ body{background-attachment:scroll}
   <p id="resetInfo" class="foot-note"></p>
 </main>
 
-<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 glass px-4 py-2 text-sm text-center max-w-[90vw] hidden z-[60]"></div>
+<div id="toast" class="glass hidden"></div>
 
 <!-- Password modal: native numeric keyboard -->
-<div id="pinModal" class="modal top"><div class="glass p-6 w-full max-w-xs text-center">
-  <div id="pinAv" class="av lg mx-auto mb-3"></div>
-  <div id="pinName" class="font-semibold text-lg"></div>
-  <p id="pinMsg" class="text-slate-400 text-sm mt-1">Type your 4-digit password</p>
+<div id="pinModal" class="modal mtop"><div class="glass">
+  <div id="pinAv" class="av lg" style="margin:0 auto .75rem"></div>
+  <div id="pinName" style="font-weight:600;font-size:1.1rem"></div>
+  <p id="pinMsg" class="text-slate-400" style="font-size:.875rem;margin:.25rem 0 0">Type your 4-digit password</p>
   <div id="pinWrap" class="pinwrap">
     <span class="pd"></span><span class="pd"></span><span class="pd"></span><span class="pd"></span>
     <input id="pinInput" class="pin-real" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" enterkeyhint="done" aria-label="4-digit password">
   </div>
-  <button id="pinCancel" class="text-slate-400 text-sm mt-4 p-2" type="button">Cancel</button>
+  <button id="pinCancel" class="text-slate-400" style="font-size:.875rem;margin-top:1rem;padding:.5rem;background:none;border:0;cursor:pointer" type="button">Cancel</button>
 </div></div>
 
 <!-- Sync modal (open to everyone) -->
-<div id="syncModal" class="modal top"><div class="glass p-6 w-full max-w-md">
-  <h2 class="text-lg font-semibold mb-1">Device sync</h2>
-  <p class="text-slate-400 text-sm mb-4">Paste your Firebase Realtime Database URL so this device shows the same statuses as everyone else. Choose "This device only" to keep data on this phone.</p>
+<div id="syncModal" class="modal mtop"><div class="glass">
+  <h2 style="font-size:1.1rem;font-weight:600;margin:0 0 .25rem">Device sync</h2>
+  <p class="text-slate-400" style="font-size:.875rem;margin:0 0 1rem">Paste your Firebase Realtime Database URL so this device shows the same statuses as everyone else. Choose "This device only" to keep data on this phone.</p>
   <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://your-project-default-rtdb.firebaseio.com" autocomplete="off" autocapitalize="off" spellcheck="false">
-  <p id="syncErr" class="text-xs mt-2 hidden" style="color:#fff"></p>
-  <p class="text-slate-500 text-xs mt-2">In Firebase, set the database rules to allow read and write on <code>attendance</code>.</p>
-  <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
+  <p id="syncErr" class="hidden" style="color:#fff;font-size:.75rem;margin:.5rem 0 0"></p>
+  <p class="text-slate-500" style="font-size:.75rem;margin:.5rem 0 0">In Firebase, set the database rules to allow read and write on <code>attendance</code>.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.25rem;justify-content:flex-end">
     <button id="syncClose" class="btn ghost" data-close="syncModal" type="button">Close</button>
     <button id="syncOff" class="btn ghost" type="button">This device only</button>
     <button id="syncSave" class="btn" type="button">Connect</button>
@@ -238,13 +243,6 @@ body{background-attachment:scroll}
 </div></div>
 
 <!-- Admin modal (hidden entry) -->
-<div id="adminModal" class="modal"><div class="glass p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+<div id="adminModal" class="modal"><div class="glass">
   <div id="adminGate">
-    <h2 class="text-lg font-semibold mb-1">Admin access</h2>
-    <p class="text-slate-400 text-sm mb-4">Enter the admin passcode.</p>
-    <input id="adminPass" type="password" inputmode="numeric" class="inp" placeholder="Passcode" autocomplete="off">
-    <p id="adminErr" class="text-xs mt-2 hidden" style="color:#fff"></p>
-    <div class="flex gap-2 mt-4 justify-end"><button class="btn ghost" data-close="adminModal" type="button">Cancel</button><button id="adminGo" class="btn" type="button">Unlock</button></div>
-  </div>
-  <div id="adminPanel" class="hidden">
-    <div class="flex justify-between items-center mb-4"><h2 class="text-lg font-semibol
+    <h2 style="font-size:1.1rem;
