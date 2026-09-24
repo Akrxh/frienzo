@@ -37,3 +37,214 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 .pill:active{transform:scale(.96)}
 .sd{width:.5rem;height:.5rem;border-radius:50%;background:rgba(255,255,255,.3);transition:.2s}
 .sd.on{background:#fff;box-shadow:0 0 10px #fff}
+.sd.err{background:transparent;border:1.5px solid #fff}
+.hero{padding:2.8rem 0 2rem;animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
+.kicker{margin:0;color:var(--mu);font-size:.78rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+.day{font-family:var(--f);font-weight:700;font-size:clamp(3.2rem,16vw,5.2rem);line-height:.98;letter-spacing:-.045em;margin:.4rem 0 .5rem;background:linear-gradient(180deg,#fff 30%,rgba(255,255,255,.55));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.date{margin:0;color:var(--mu);font-size:1rem;font-weight:400;letter-spacing:-.01em}
+.bar{display:flex;gap:4px;height:.42rem;margin-top:1.9rem;border-radius:999px;overflow:hidden}
+.seg{display:block;border-radius:999px;min-width:6px;transition:flex .5s cubic-bezier(.3,.9,.3,1)}
+.seg.going{background:#fff;box-shadow:0 0 14px rgba(255,255,255,.4)}
+.seg.pending{background:rgba(255,255,255,.42)}
+.seg.out{background:rgba(255,255,255,.14)}
+.seg.empty{background:rgba(255,255,255,.1)}
+.stats{display:flex;gap:1.8rem;margin-top:1.05rem}
+.stat{display:flex;align-items:baseline;gap:.45rem}
+.n{font-family:var(--f);font-weight:600;font-size:1.7rem;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.n.going{color:#fff}.n.pending{color:var(--pe)}.n.out{color:var(--ou)}
+.l{font-size:.78rem;color:var(--mu)}
+.card{position:relative;background:linear-gradient(150deg,rgba(255,255,255,.13),rgba(255,255,255,.04));border:1px solid var(--line);border-radius:2rem;padding:1.15rem;margin-bottom:1rem;box-shadow:var(--gshadow)}
+.card::after{content:"";position:absolute;left:14%;right:14%;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent)}
+.who,.invite{display:flex;align-items:center;gap:.8rem}
+.who{margin-bottom:1.05rem}
+.invite{padding:.35rem .2rem}
+.invite i{font-size:1.5rem;color:#fff}
+.av{width:2.5rem;height:2.5rem;flex-shrink:0;border-radius:50%;display:grid;place-items:center;font-weight:600;color:#fff;border:1px solid var(--line2);font-size:.86rem;box-shadow:var(--spec)}
+.av.lg{width:3.2rem;height:3.2rem;font-size:1.02rem;box-shadow:0 8px 24px rgba(0,0,0,.5),var(--spec)}
+.wt,.rt{flex:1;min-width:0}
+.nm{display:block;font-weight:600;letter-spacing:-.015em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb{display:block;color:var(--mu);font-size:.78rem;margin-top:1px}
+.ghost-sm{flex-shrink:0;display:flex;align-items:center;gap:.4rem;padding:.55rem .85rem;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.09);color:var(--tx);font:500 .76rem var(--f);cursor:pointer;box-shadow:var(--spec);transition:background .2s,transform .15s}
+.ghost-sm:hover{background:rgba(255,255,255,.16)}
+.ghost-sm:active{transform:scale(.96)}
+.seg3{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:4px;border-radius:1.7rem;background:rgba(255,255,255,.06);border:1px solid var(--line);box-shadow:inset 0 2px 8px rgba(0,0,0,.4)}
+.seg3 button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:.34rem;padding:.9rem .2rem;background:none;border:0;color:var(--mu);font:600 .8rem var(--f);cursor:pointer;transition:color .25s}
+.seg3 button i{font-size:1.15rem}
+.seg3 button.on{color:#fff}
+.seg3[data-v=going] button.on{color:#000}
+.thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/3);border-radius:1.4rem;transition:transform .45s cubic-bezier(.32,1.15,.4,1),background .3s,box-shadow .3s}
+.seg3[data-v=going] .thumb{transform:translateX(0);background:#fff;box-shadow:0 6px 28px rgba(255,255,255,.35)}
+.seg3[data-v=pending] .thumb{transform:translateX(100%);background:rgba(255,255,255,.22);box-shadow:var(--spec),0 0 0 1px rgba(255,255,255,.3)}
+.seg3[data-v=out] .thumb{transform:translateX(200%);background:rgba(0,0,0,.6);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
+.rh{padding:.2rem .3rem .9rem;display:flex;align-items:baseline;justify-content:space-between}
+.rh h2{margin:0;font-family:var(--f);font-weight:700;letter-spacing:-.03em;font-size:1.5rem}
+.rh span{color:var(--mu);font-size:.78rem}
+.row{position:relative;width:100%;display:flex;align-items:center;gap:.8rem;padding:.75rem .85rem;margin-bottom:.5rem;border-radius:1.5rem;border:1px solid var(--line);background:rgba(255,255,255,.05);color:inherit;text-align:left;font-family:var(--f);cursor:pointer;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.14);transition:background .2s,transform .15s,border-color .2s}
+.row:hover{background:rgba(255,255,255,.1)}
+.row:active{transform:scale(.985)}
+.row.out .nm{color:var(--mu)}
+.row.me{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.15);cursor:default;box-shadow:var(--spec)}
+.row.me .sb{color:#fff}
+.chip{display:inline-flex;align-items:center;gap:.4rem;flex-shrink:0;white-space:nowrap;padding:.36rem .72rem;border-radius:999px;font-size:.72rem;font-weight:600;border:1px solid}
+.chip.going{color:#000;background:#fff;border-color:#fff}
+.chip.pending{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3)}
+.chip.out{color:rgba(255,255,255,.55);background:transparent;border-color:rgba(255,255,255,.22);border-style:dashed}
+.empty-note{text-align:center;color:var(--mu);font-size:.85rem;padding:1.8rem .5rem;margin:0;line-height:1.5}
+.foot-note{text-align:center;color:var(--mu2);font-size:.72rem;margin:1.6rem 0 0;line-height:1.5}
+.glass{background:rgba(28,28,30,.55);border:1px solid var(--line2);border-radius:2rem;box-shadow:0 30px 90px rgba(0,0,0,.7),var(--spec)}
+.inp{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:1.1rem;padding:.85rem 1rem;color:#fff;outline:none;font:500 1rem var(--f);box-shadow:inset 0 2px 6px rgba(0,0,0,.35);transition:border-color .2s,box-shadow .2s}
+.inp::placeholder{color:rgba(255,255,255,.35)}
+.inp:focus{border-color:rgba(255,255,255,.55);box-shadow:inset 0 2px 6px rgba(0,0,0,.35),0 0 0 4px rgba(255,255,255,.1)}
+.btn{padding:.85rem 1.2rem;border-radius:999px;font:600 .92rem var(--f);background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.34);cursor:pointer;box-shadow:var(--spec),0 8px 24px rgba(0,0,0,.3);transition:transform .15s,background .2s}
+.btn:hover{background:rgba(255,255,255,.28)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.ghost{background:rgba(255,255,255,.07);border-color:var(--line);color:rgba(255,255,255,.85);box-shadow:var(--spec)}
+.btn.ghost:hover{background:rgba(255,255,255,.13)}
+/* PIN entry (native keyboard) */
+.pinwrap{position:relative;display:flex;justify-content:center;gap:.85rem;margin:1.5rem 0 .4rem;cursor:text}
+.pd{width:3.1rem;height:3.6rem;border-radius:1.2rem;border:1px solid var(--line2);background:rgba(255,255,255,.07);display:grid;place-items:center;box-shadow:inset 0 2px 8px rgba(0,0,0,.35);transition:border-color .2s,box-shadow .2s,background .2s}
+.pd::after{content:"";width:.72rem;height:.72rem;border-radius:50%;background:#fff;box-shadow:0 0 14px rgba(255,255,255,.8);transform:scale(0);transition:transform .18s cubic-bezier(.3,1.6,.5,1)}
+.pd.f::after{transform:scale(1)}
+.pd.cur{border-color:rgba(255,255,255,.85);background:rgba(255,255,255,.12);box-shadow:inset 0 2px 8px rgba(0,0,0,.3),0 0 0 4px rgba(255,255,255,.12)}
+.pin-real{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;background:transparent;color:transparent;font-size:16px;caret-color:transparent;text-align:center}
+.shake{animation:sh .4s}
+@keyframes sh{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;padding:1rem;z-index:50}
+.modal.top{align-items:flex-start;padding-top:max(8vh,env(safe-area-inset-top,0px))}
+.modal.show{display:flex}
+.modal>div{max-height:calc(100dvh - 2rem);overflow-y:auto}
+.arow{display:flex;align-items:center;gap:.6rem;padding:.6rem .65rem;border:1px solid var(--line);border-radius:1.3rem;background:rgba(255,255,255,.05)}
+.arow .av{width:2.2rem;height:2.2rem;font-size:.8rem}
+.arow .nm{flex:1;min-width:0}
+.aedit{display:flex;gap:.5rem;margin-top:.5rem}
+.act{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:.4rem;min-width:2.9rem;height:2.9rem;padding:0 .8rem;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.09);color:#fff;font:600 .8rem var(--f);cursor:pointer;touch-action:manipulation;box-shadow:var(--spec)}
+.act.rm{color:rgba(255,255,255,.8)}
+.act.rm.sure{background:#fff;color:#000;border-color:#fff}
+.box{padding:.9rem;border-radius:1.5rem;border:1px solid var(--line);background:rgba(255,255,255,.05);margin-bottom:1.1rem}
+code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;font-size:.85em}
+.text-slate-400{color:var(--mu)!important}
+.text-slate-500{color:var(--mu2)!important}
+button:focus-visible,.inp:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* Minimal refinements */
+.brand{display:flex;flex-direction:column;gap:.15rem}
+.mark{font-size:1.3rem;font-weight:600;letter-spacing:-.04em;padding:0;line-height:1.1}
+.mark i{display:none}
+.sub{margin:0;font-size:.72rem;color:var(--mu2);letter-spacing:.03em;font-weight:400}
+body::before{display:none}
+body{background-image:radial-gradient(720px 500px at 50% -14%,rgba(255,255,255,.14),transparent 70%)}
+.hero{padding:3.2rem 0 2.3rem}
+.kicker{font-size:.68rem;letter-spacing:.2em}
+.day{font-weight:600;letter-spacing:-.05em}
+.bar{height:.3rem;margin-top:2rem}
+.stats{margin-top:1.1rem}
+.n{font-weight:500}
+.card{background:rgba(255,255,255,.045);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 20px 50px rgba(0,0,0,.4);border-radius:1.9rem;padding:1.2rem}
+.card::after{display:none}
+.rh h2{font-weight:600;font-size:1.3rem}
+.row{background:transparent;border:0;border-bottom:1px solid rgba(255,255,255,.07);border-radius:0;box-shadow:none;margin-bottom:0;padding:.85rem .3rem}
+.row:last-child{border-bottom:0}
+.row:hover{background:rgba(255,255,255,.035)}
+.row.me{background:rgba(255,255,255,.09);border-radius:1.2rem;border-bottom-color:transparent;padding-left:.7rem;padding-right:.7rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.chip{font-size:.68rem;padding:.3rem .65rem}
+.av{border-color:rgba(255,255,255,.12);box-shadow:none}
+.foot-note{margin-top:2rem;font-size:.7rem}
+/* Summary ring */
+.summary{display:flex;align-items:center;gap:1.7rem;margin-top:2.1rem}
+.ring{position:relative;width:6.6rem;height:6.6rem;flex-shrink:0}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.ring circle{fill:none;stroke-width:3.4;stroke-linecap:round}
+.ring .trk{stroke:rgba(255,255,255,.08)}
+.ring .arc{opacity:0;transition:stroke-dasharray .8s cubic-bezier(.3,.9,.3,1),stroke-dashoffset .8s cubic-bezier(.3,.9,.3,1),opacity .4s}
+.ring .arc.go{stroke:#fff;filter:drop-shadow(0 0 5px rgba(255,255,255,.55))}
+.ring .arc.pe{stroke:rgba(255,255,255,.42)}
+.ring .arc.ou{stroke:rgba(255,255,255,.16)}
+.mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.mid span:first-child{font-size:2.05rem;font-weight:500;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.mid span:last-child{margin-top:.32rem;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mu2)}
+.legend{flex:1;min-width:0}
+.lg{display:flex;align-items:center;gap:.7rem;padding:.62rem 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:.86rem;color:var(--mu)}
+.lg:last-child{border-bottom:0}
+.lg b{margin-left:auto;color:#fff;font-weight:500;font-size:1.05rem;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.mk{width:.55rem;height:.55rem;border-radius:50%;flex-shrink:0}
+.mk.go{background:#fff;box-shadow:0 0 8px rgba(255,255,255,.6)}
+.mk.pe{border:1.5px solid rgba(255,255,255,.75);background:linear-gradient(90deg,rgba(255,255,255,.75) 50%,transparent 50%)}
+.mk.ou{border:1.5px dashed rgba(255,255,255,.4)}
+.summary{display:block;margin-top:1.8rem;gap:0}
+.lg{padding:.8rem 0}
+.lg:first-child{border-top:1px solid rgba(255,255,255,.08)}
+.lg b{font-size:1.25rem;font-weight:500}
+/* Stability: no nested blur (fixes black screens on some phones) */
+.row,.seg3,.btn,.act,.ghost-sm,.box,.arow,.inp,.pd{-webkit-backdrop-filter:none;backdrop-filter:none}
+.modal{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.72)}
+.glass{background:rgba(26,26,28,.86)}
+body{background-attachment:scroll}
+.day{background:none;color:#fff;-webkit-text-fill-color:currentColor}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){.day{background:linear-gradient(180deg,#fff 30%,rgba(255,255,255,.55));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="brand"><button id="logo" class="mark" type="button" tabindex="-1" aria-label="Frienzo">Frienzo</button><p class="sub">Made with love by Tryin'</p></div>
+    <button id="syncBtn" class="pill" type="button" aria-label="Sync settings"><span id="syncDot" class="sd"></span><span id="syncTxt">This device</span></button>
+  </header>
+
+  <section class="hero">
+    <p class="kicker">Attendance for</p>
+    <h1 id="dayName" class="day"></h1>
+    <p id="dayDate" class="date"></p>
+    <div id="summary" class="summary"></div>
+  </section>
+
+  <section id="session" class="card"></section>
+
+  <section class="card">
+    <div class="rh"><h2>Class roster</h2><span id="rosterCount"></span></div>
+    <div id="roster"></div>
+  </section>
+
+  <p id="resetInfo" class="foot-note"></p>
+</main>
+
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 glass px-4 py-2 text-sm text-center max-w-[90vw] hidden z-[60]"></div>
+
+<!-- Password modal: native numeric keyboard -->
+<div id="pinModal" class="modal top"><div class="glass p-6 w-full max-w-xs text-center">
+  <div id="pinAv" class="av lg mx-auto mb-3"></div>
+  <div id="pinName" class="font-semibold text-lg"></div>
+  <p id="pinMsg" class="text-slate-400 text-sm mt-1">Type your 4-digit password</p>
+  <div id="pinWrap" class="pinwrap">
+    <span class="pd"></span><span class="pd"></span><span class="pd"></span><span class="pd"></span>
+    <input id="pinInput" class="pin-real" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" enterkeyhint="done" aria-label="4-digit password">
+  </div>
+  <button id="pinCancel" class="text-slate-400 text-sm mt-4 p-2" type="button">Cancel</button>
+</div></div>
+
+<!-- Sync modal (open to everyone) -->
+<div id="syncModal" class="modal top"><div class="glass p-6 w-full max-w-md">
+  <h2 class="text-lg font-semibold mb-1">Device sync</h2>
+  <p class="text-slate-400 text-sm mb-4">Paste your Firebase Realtime Database URL so this device shows the same statuses as everyone else. Choose "This device only" to keep data on this phone.</p>
+  <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://your-project-default-rtdb.firebaseio.com" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <p id="syncErr" class="text-xs mt-2 hidden" style="color:#fff"></p>
+  <p class="text-slate-500 text-xs mt-2">In Firebase, set the database rules to allow read and write on <code>attendance</code>.</p>
+  <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
+    <button id="syncClose" class="btn ghost" data-close="syncModal" type="button">Close</button>
+    <button id="syncOff" class="btn ghost" type="button">This device only</button>
+    <button id="syncSave" class="btn" type="button">Connect</button>
+  </div>
+</div></div>
+
+<!-- Admin modal (hidden entry) -->
+<div id="adminModal" class="modal"><div class="glass p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+  <div id="adminGate">
+    <h2 class="text-lg font-semibold mb-1">Admin access</h2>
+    <p class="text-slate-400 text-sm mb-4">Enter the admin passcode.</p>
+    <input id="adminPass" type="password" inputmode="numeric" class="inp" placeholder="Passcode" autocomplete="off">
+    <p id="adminErr" class="text-xs mt-2 hidden" style="color:#fff"></p>
+    <div class="flex gap-2 mt-4 justify-end"><button class="btn ghost" data-close="adminModal" type="button">Cancel</button><button id="adminGo" class="btn" type="button">Unlock</button></div>
+  </div>
+  <div id="adminPanel" class="hidden">
+    <div class="flex justify-between items-center mb-4"><h2 class="text-lg font-semibol
