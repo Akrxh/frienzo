@@ -3,411 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AttendanceSync — School Attendance Tracker</title>
-    <!-- Tailwind CSS -->
+    <title>AttendanceSync</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#050507',
-                        cardBg: '#0f0f14',
-                        cardBorder: '#272730',
-                        accentWhite: '#f4f4f5'
-                    },
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts & Font Awesome Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
     <style>
-        body {
-            background-color: #050507;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
-            color: #f4f4f5;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            min-height: 100vh;
-        }
-
-        .glass-card {
-            background: rgba(15, 15, 20, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .glass-card-interactive {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .glass-card-interactive:hover {
-            border-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
-        }
-
-        .glass-input {
-            background: rgba(24, 24, 27, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #ffffff;
-        }
-
-        .glass-input:focus {
-            border-color: rgba(255, 255, 255, 0.4);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
-        }
-
-        /* Pulse glowing animations for status badges */
-        .status-glow-green {
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
-        }
-        .status-glow-yellow {
-            box-shadow: 0 0 12px rgba(234, 179, 8, 0.35);
-        }
-        .status-glow-red {
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #050507;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #272730;
-            border-radius: 3px;
-        }
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; }
+        .glass { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.12); }
+        .glass-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); }
+        .glass-btn:hover { background: rgba(255,255,255,0.15); }
+        .glass-input { background: #0a0a0a; border: 1px solid #262626; color: #fff; }
+        .glass-input:focus { border-color: #fff; outline: none; }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
     </style>
 </head>
-<body class="flex flex-col min-h-screen antialiased selection:bg-zinc-800 selection:text-white">
+<body class="flex flex-col min-h-screen">
 
-    <!-- TOP NAV / HEADER -->
-    <header class="sticky top-0 z-30 glass-card border-b border-zinc-800/80 px-4 py-3 sm:px-8">
-        <div class="max-w-5xl mx-auto flex items-center justify-between">
+    <!-- HEADER -->
+    <header class="sticky top-0 z-30 glass border-b border-neutral-800 px-4 py-3">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-400 text-black flex items-center justify-center font-black text-lg shadow-lg shadow-white/5">
+                <div class="w-9 h-9 rounded-lg bg-white text-black flex items-center justify-center font-black text-base">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
                 <div>
-                    <h1 class="font-extrabold text-lg sm:text-xl tracking-tight text-white flex items-center gap-2">
+                    <h1 class="font-extrabold text-base tracking-tight flex items-center gap-2">
                         AttendanceSync
-                        <span id="syncStatusBadge" class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-semibold border border-zinc-700/50">
-                            Local
-                        </span>
+                        <span id="syncBadge" class="text-[9px] uppercase px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-300 border border-neutral-700">Connecting...</span>
                     </h1>
-                    <p class="text-xs text-zinc-400 font-medium" id="targetDateLabel">Target Day: Loading...</p>
+                    <p id="targetDate" class="text-[11px] text-neutral-400">Target Day: Loading...</p>
                 </div>
-            </div>
-
-            <div class="flex items-center space-x-2">
-                <button onclick="openModal('syncModal')" title="Sync Settings" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700/60 hover:border-zinc-500 text-xs text-zinc-300 hover:text-white transition-all">
-                    <i class="fa-solid fa-rotate text-zinc-400"></i>
-                    <span class="hidden sm:inline font-medium">Sync DB</span>
-                </button>
             </div>
         </div>
     </header>
 
     <!-- MAIN CONTAINER -->
-    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 sm:px-8 space-y-6">
-
-        <!-- TARGET SCHOOL DAY & AUTOMATED ENGINE NOTICE -->
-        <div class="glass-card rounded-2xl p-4 border border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
-                    <i class="fa-solid fa-clock-rotate-left text-sm"></i>
-                </div>
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-5 space-y-5">
+        <!-- INFO BOX -->
+        <div class="glass rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+            <div class="flex items-center space-x-2.5">
+                <i class="fa-solid fa-clock-rotate-left text-neutral-400 text-base"></i>
                 <div>
-                    <div class="text-sm font-semibold text-white flex items-center gap-2">
-                        <span>Attendance Window</span>
-                        <span class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">Auto 2:00 PM Reset</span>
-                    </div>
-                    <p class="text-xs text-zinc-400 mt-0.5" id="resetMessageDesc">Statuses automatically reset every day past 2:00 PM for the upcoming school day.</p>
+                    <span class="font-bold text-white">Attendance Window</span>
+                    <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-700">Auto 2:00 PM Reset</span>
+                    <p class="text-[11px] text-neutral-400 mt-0.5">Statuses automatically reset daily after 2:00 PM for the upcoming school day.</p>
                 </div>
             </div>
-            <div id="statsSummary" class="flex items-center space-x-3 text-xs text-zinc-400 self-end sm:self-auto">
-                <!-- Calculated via JS -->
-            </div>
+            <div id="stats" class="flex items-center space-x-3 text-neutral-400 font-medium self-end sm:self-auto"></div>
         </div>
 
-        <!-- ACTIVE SESSION CARD -->
-        <section id="activeSessionContainer">
-            <!-- Rendered dynamically -->
-        </section>
+        <!-- ACTIVE USER SESSION -->
+        <section id="activeUserBox"></section>
 
-        <!-- CLASS ROSTER SECTION -->
-        <section class="space-y-4">
+        <!-- ROSTER -->
+        <section class="space-y-3">
             <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-base font-bold text-white tracking-wide">Class Roster</h2>
-                    <p class="text-xs text-zinc-400">Select your profile or enter your 4-digit PIN to update your attendance.</p>
-                </div>
-                <div class="text-xs text-zinc-500 font-medium" id="studentCountLabel">
-                    0 Friends
-                </div>
+                <h2 class="text-sm font-bold tracking-wide">Class Roster</h2>
+                <span id="rosterCount" class="text-xs text-neutral-500">0 Friends</span>
             </div>
-
-            <!-- Roster Grid -->
-            <div id="rosterGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <!-- Roster cards loaded here -->
-            </div>
+            <div id="rosterGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
         </section>
-
     </main>
 
     <!-- FOOTER -->
-    <footer class="mt-auto border-t border-zinc-900 py-6 px-4 text-center">
-        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500">
-            <div>
-                <span>&copy; 2026 AttendanceSync. Designed for School Squads.</span>
-            </div>
-            <div>
-                <button onclick="openModal('adminAuthModal')" class="hover:text-zinc-300 transition-colors flex items-center space-x-1">
-                    <i class="fa-solid fa-user-shield text-xs"></i>
-                    <span>Admin Access</span>
-                </button>
-            </div>
-        </div>
+    <footer class="border-t border-neutral-900 py-4 px-4 text-center text-xs text-neutral-500 flex justify-between max-w-4xl mx-auto w-full">
+        <span>&copy; 2026 AttendanceSync</span>
+        <button onclick="openM('adminAuthModal')" class="hover:text-neutral-200"><i class="fa-solid fa-lock mr-1"></i>Admin Access</button>
     </footer>
 
-
-    <!-- MODALS SECTION -->
-
-    <!-- 1. PIN LOGIN MODAL -->
+    <!-- PIN MODAL -->
     <div id="pinModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
-        <div class="glass-card w-full max-w-sm rounded-2xl p-6 border border-zinc-800 shadow-2xl relative">
-            <button onclick="closeModal('pinModal')" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            
-            <div class="text-center space-y-2">
-                <div class="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 mx-auto flex items-center justify-center text-white text-lg font-bold" id="pinUserInitials">
-                    ?
-                </div>
-                <h3 class="text-lg font-bold text-white" id="pinUserName">Unlock Profile</h3>
-                <p class="text-xs text-zinc-400">Enter your secret 4-digit PIN to activate your session.</p>
+        <div class="glass w-full max-w-xs rounded-xl p-5 relative text-center space-y-4">
+            <button onclick="closeM('pinModal')" class="absolute top-3 right-3 text-neutral-400"><i class="fa-solid fa-xmark"></i></button>
+            <div class="w-11 h-11 rounded-full bg-neutral-800 mx-auto flex items-center justify-center text-white font-bold" id="pinUserInitials">?</div>
+            <div>
+                <h3 id="pinUserName" class="text-base font-bold">Unlock Profile</h3>
+                <p class="text-xs text-neutral-400">Enter secret 4-digit PIN</p>
             </div>
-
-            <form id="pinForm" onsubmit="handlePinSubmit(event)" class="mt-6 space-y-4">
-                <div class="flex justify-center gap-2">
-                    <input type="password" maxlength="4" pattern="[0-9]{4}" id="pinInput" required autofocus
-                           class="glass-input text-center text-2xl font-mono tracking-[0.5em] w-48 py-2.5 rounded-xl text-white placeholder-zinc-600 focus:ring-0"
-                           placeholder="••••">
-                </div>
-                <p id="pinErrorMsg" class="text-xs text-red-400 text-center font-medium hidden">Incorrect PIN. Try again.</p>
-
-                <button type="submit" class="w-full py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-sm transition-all shadow-md">
-                    Unlock Session
-                </button>
+            <form onsubmit="handlePinSubmit(event)" class="space-y-3">
+                <input type="password" maxlength="4" pattern="[0-9]{4}" id="pinInput" required autofocus class="glass-input text-center text-xl font-mono tracking-widest w-36 py-2 rounded-lg">
+                <p id="pinErr" class="text-xs text-red-400 hidden">Incorrect PIN.</p>
+                <button type="submit" class="w-full py-2 rounded-lg bg-white text-black font-bold text-xs hover:bg-neutral-200">Unlock</button>
             </form>
         </div>
     </div>
 
-    <!-- 2. SYNC DATABASE MODAL -->
-    <div id="syncModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
-        <div class="glass-card w-full max-w-md rounded-2xl p-6 border border-zinc-800 shadow-2xl relative space-y-4">
-            <button onclick="closeModal('syncModal')" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white">
-                    <i class="fa-solid fa-database"></i>
-                </div>
-                <div>
-                    <h3 class="text-base font-bold text-white">Database Live Sync</h3>
-                    <p class="text-xs text-zinc-400">Connect your Firebase Realtime DB URL for instant live syncing.</p>
-                </div>
-            </div>
-
-            <div class="space-y-3 pt-2">
-                <div>
-                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Firebase Realtime DB URL</label>
-                    <input type="url" id="dbUrlInput" class="w-full glass-input px-3 py-2 text-xs rounded-lg font-mono" placeholder="https://your-db.asia-southeast1.firebasedatabase.app/attendanceSync">
-                </div>
-                <p class="text-[11px] text-zinc-400">Leaves blank to use LocalStorage. Preset default URL is pre-filled.</p>
-
-                <div class="flex items-center justify-end space-x-2 pt-2">
-                    <button onclick="saveDbUrl()" class="px-4 py-2 rounded-lg bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition-all">
-                        Save & Sync Now
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. ADMIN AUTH MODAL -->
+    <!-- ADMIN AUTH MODAL -->
     <div id="adminAuthModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
-        <div class="glass-card w-full max-w-sm rounded-2xl p-6 border border-zinc-800 shadow-2xl relative space-y-4">
-            <button onclick="closeModal('adminAuthModal')" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="text-center space-y-1">
-                <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 mx-auto flex items-center justify-center text-white">
-                    <i class="fa-solid fa-lock"></i>
-                </div>
-                <h3 class="text-base font-bold text-white">Admin Authentication</h3>
-                <p class="text-xs text-zinc-400">Enter administrator passcode to access roster management.</p>
-            </div>
-
-            <form onsubmit="handleAdminAuth(event)" class="space-y-3">
-                <input type="password" id="adminPasscodeInput" required class="glass-input w-full text-center py-2.5 rounded-xl font-mono text-sm tracking-widest" placeholder="Enter Admin Passcode">
-                <p id="adminAuthError" class="text-xs text-red-400 text-center font-medium hidden">Invalid passcode.</p>
-                <button type="submit" class="w-full py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs transition-all">
-                    Access Admin Panel
-                </button>
+        <div class="glass w-full max-w-xs rounded-xl p-5 relative text-center space-y-3">
+            <button onclick="closeM('adminAuthModal')" class="absolute top-3 right-3 text-neutral-400"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-sm font-bold">Admin Passcode</h3>
+            <form onsubmit="handleAdminAuth(event)" class="space-y-2">
+                <input type="password" id="adminPass" required class="glass-input w-full text-center py-2 rounded-lg font-mono text-xs" placeholder="Passcode">
+                <p id="adminErr" class="text-xs text-red-400 hidden">Invalid Passcode.</p>
+                <button type="submit" class="w-full py-2 rounded-lg bg-white text-black font-bold text-xs">Enter Admin Panel</button>
             </form>
         </div>
     </div>
 
-    <!-- 4. ADMIN PANEL MODAL -->
+    <!-- ADMIN PANEL MODAL -->
     <div id="adminPanelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
-        <div class="glass-card w-full max-w-lg rounded-2xl p-6 border border-zinc-800 shadow-2xl relative space-y-5 max-h-[90vh] overflow-y-auto">
-            <button onclick="closeModal('adminPanelModal')" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white">
-                    <i class="fa-solid fa-user-gear"></i>
-                </div>
-                <div>
-                    <h3 class="text-base font-bold text-white">Admin Management Panel</h3>
-                    <p class="text-xs text-zinc-400">Register new students or manage existing user profiles.</p>
-                </div>
+        <div class="glass w-full max-w-md rounded-xl p-5 relative space-y-4 max-h-[85vh] overflow-y-auto text-xs">
+            <button onclick="closeM('adminPanelModal')" class="absolute top-3 right-3 text-neutral-400"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-sm font-bold">Admin Control Panel</h3>
+            
+            <div class="p-3 rounded-lg bg-neutral-900 border border-neutral-800 space-y-2">
+                <span class="font-bold uppercase text-[10px] text-neutral-400">Firebase DB URL</span>
+                <input type="url" id="adminDbUrl" class="w-full glass-input p-2 rounded text-[11px] font-mono">
+                <button onclick="saveAdminDbUrl()" class="w-full py-1.5 bg-white text-black font-bold rounded">Save DB URL</button>
             </div>
 
-            <!-- ADD STUDENT FORM -->
-            <div class="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 space-y-3">
-                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Register New Student</h4>
-                <form onsubmit="handleAddStudent(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <input type="text" id="newStudentName" placeholder="Full Name" required class="glass-input px-3 py-2 text-xs rounded-lg sm:col-span-1">
-                    <input type="password" id="newStudentPin" placeholder="4-Digit PIN" pattern="[0-9]{4}" maxlength="4" required class="glass-input px-3 py-2 text-xs rounded-lg font-mono text-center sm:col-span-1">
-                    <button type="submit" class="px-3 py-2 bg-white text-black font-semibold text-xs rounded-lg hover:bg-zinc-200 transition-all sm:col-span-1">
-                        + Add Student
-                    </button>
+            <div class="p-3 rounded-lg bg-neutral-900 border border-neutral-800 space-y-2">
+                <span class="font-bold uppercase text-[10px] text-neutral-400">Add Student</span>
+                <form onsubmit="handleAddStudent(event)" class="flex gap-2">
+                    <input type="text" id="newName" placeholder="Name" required class="glass-input p-2 rounded flex-grow">
+                    <input type="password" id="newPin" placeholder="4-Digit PIN" pattern="[0-9]{4}" maxlength="4" required class="glass-input p-2 rounded w-20 text-center font-mono">
+                    <button type="submit" class="px-3 bg-white text-black font-bold rounded">+</button>
                 </form>
             </div>
 
-            <!-- EXISTING STUDENTS MANAGE LIST -->
-            <div class="space-y-2">
-                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Roster Profiles (<span id="adminRosterCount">0</span>)</h4>
-                <div id="adminStudentList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                    <!-- Populated via JS -->
-                </div>
+            <div class="space-y-1.5">
+                <span class="font-bold uppercase text-[10px] text-neutral-400">Manage Students</span>
+                <div id="adminList" class="space-y-1.5 max-h-36 overflow-y-auto"></div>
             </div>
 
-            <div class="pt-2 border-t border-zinc-800 flex justify-between items-center">
-                <button onclick="triggerManualReset()" class="text-xs px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium transition-all">
-                    <i class="fa-solid fa-arrows-rotate mr-1"></i> Force Reset All to Pending
-                </button>
-                <button onclick="closeModal('adminPanelModal')" class="text-xs px-4 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 hover:text-white">
-                    Close
-                </button>
+            <div class="pt-2 border-t border-neutral-800 flex justify-between">
+                <button onclick="forceReset()" class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 rounded font-medium">Reset All Statuses</button>
+                <button onclick="closeM('adminPanelModal')" class="px-3 py-1.5 bg-neutral-800 rounded">Close</button>
             </div>
         </div>
     </div>
 
-
-    <!-- APPLICATION LOGIC ENGINE -->
+    <!-- LOGIC SCRIPT -->
     <script>
-        // --- CONSTANTS & CONFIGS ---
-        const DEFAULT_FIREBASE_URL = "https://frienzo-originals-default-rtdb.asia-southeast1.firebasedatabase.app/attendanceSync";
-        const ADMIN_PASSCODE = "8888"; // Internal admin passcode
-
-        // Initial default student dataset if local & remote storage are empty
+        const DEFAULT_URL = "https://frienzo-originals-default-rtdb.asia-southeast1.firebasedatabase.app/attendanceSync";
+        const ADMIN_PASS = "8888";
         const DEFAULT_STUDENTS = [
-            { id: "st-101", name: "Alex Rivers", pin: "1234", status: "confirmed", updatedAt: Date.now() },
-            { id: "st-102", name: "Jordan Lee", pin: "2222", status: "pending", updatedAt: Date.now() },
-            { id: "st-103", name: "Sam Vance", pin: "3333", status: "absent", updatedAt: Date.now() },
-            { id: "st-104", name: "Taylor Swift", pin: "4444", status: "confirmed", updatedAt: Date.now() },
-            { id: "st-105", name: "Chris Evans", pin: "5555", status: "pending", updatedAt: Date.now() }
+            { id: "s1", name: "Alex Rivers", pin: "1234", status: "confirmed" },
+            { id: "s2", name: "Jordan Lee", pin: "2222", status: "pending" },
+            { id: "s3", name: "Sam Vance", pin: "3333", status: "absent" }
         ];
 
-        // --- STATE APP MANAGEMENT ---
-        let appData = {
-            students: [],
-            lastResetKey: "" // Format YYYY-MM-DD
-        };
+        let appData = { students: [], lastResetKey: "" };
+        let activeId = sessionStorage.getItem("active_id");
+        let selectedId = null, sse = null;
 
-        let activeUserId = null; // Currently logged in student ID
-        let selectedUserIdForLogin = null;
-        let firebaseEventSource = null;
-        let syncMode = "local"; // "local" or "firebase"
-
-        // --- INITIALIZATION ---
         document.addEventListener("DOMContentLoaded", () => {
-            initApp();
-            // Check for status resets every 30 seconds
-            setInterval(checkAndApplyResetEngine, 30000);
+            loadLocal();
+            initDb();
+            checkReset();
+            render();
+            setInterval(checkReset, 30000);
         });
 
-        function initApp() {
-            // Setup DB URL default if not set
-            let dbUrl = localStorage.getItem("attendance_db_url");
-            if (dbUrl === null) {
-                dbUrl = DEFAULT_FIREBASE_URL;
-                localStorage.setItem("attendance_db_url", dbUrl);
+        function getDbUrl() {
+            let u = localStorage.getItem("db_url");
+            if (!u) { u = DEFAULT_URL; localStorage.setItem("db_url", u); }
+            return u.trim();
+        }
+
+        function loadLocal() {
+            const raw = localStorage.getItem("app_data");
+            appData = raw ? JSON.parse(raw) : { students: DEFAULT_STUDENTS, lastResetKey: "" };
+        }
+
+        function saveLocal() { localStorage.setItem("app_data", JSON.stringify(appData)); }
+
+        function initDb() {
+            let u = getDbUrl();
+            if (u.endsWith("/")) u = u.slice(0, -1);
+            if (!u.endsWith(".json")) u += ".json";
+
+            document.getElementById("syncBadge").textContent = "Live";
+            document.getElementById("syncBadge").className = "text-[9px] uppercase px-2 py-0.5 rounded-full bg-white text-black font-bold";
+
+            fetch(u).then(r => r.json()).then(d => {
+                if (d && Array.isArray(d.students)) { appData = d; saveLocal(); checkReset(); render(); }
+                else { pushData(); }
+            }).catch(() => {
+                document.getElementById("syncBadge").textContent = "Offline";
+                document.getElementById("syncBadge").className = "text-[9px] uppercase px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-400";
+            });
+
+            if (sse) sse.close();
+            try {
+                sse = new EventSource(u);
+                sse.addEventListener("put", e => {
+                    if (e.data) {
+                        const p = JSON.parse(e.data);
+                        if (p.data && Array.isArray(p.data.students)) { appData = p.data; saveLocal(); render(); }
+                    }
+                });
+            } catch(e) {}
+        }
+
+        function pushData() {
+            saveLocal();
+            let u = getDbUrl();
+            if (u.endsWith("/")) u = u.slice(0, -1);
+            if (!u.endsWith(".json")) u += ".json";
+            fetch(u, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(appData) });
+        }
+
+        function checkReset() {
+            const n = new Date(), h = n.getHours(), today = n.toISOString().split('T')[0];
+            if (h >= 14 && appData.lastResetKey !== today && n.getDay() !== 0) {
+                appData.students.forEach(s => s.status = "pending");
+                appData.lastResetKey = today;
+                pushData();
             }
-            document.getElementById("dbUrlInput").value = dbUrl;
-
-            // Load active session if retained in sessionStorage
-            activeUserId = sessionStorage.getItem("attendance_active_user_id");
-
-            // Load local storage first as instant fallback
-            loadLocalData();
-
-            // Connect to Firebase live stream
-            setupFirebaseSync();
-
-            // Perform 2:00 PM reset engine check
-            checkAndApplyResetEngine();
-
-            // Render interface
-            renderUI();
+            let target = new Date(n);
+            if (n.getDay() === 0) target.setDate(n.getDate() + 1);
+            else if (h >= 14) { target.setDate(n.getDate() + 1); if (target.getDay() === 0) target.setDate(target.getDate() + 1); }
+            document.getElementById("targetDate").textContent = "Target: " + target.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
         }
 
-        // --- DATA PERSISTENCE & SYNC ENGINE ---
-        function loadLocalData() {
-            const raw = localStorage.getItem("attendance_app_data");
-            if (raw) {
-                try {
-                    appData = JSON.parse(raw);
-                } catch (e) {
-                    console.error("Local storage parse error:", e);
-                    appData = { students: DEFAULT_STUDENTS, lastResetKey: "" };
-                }
-            } else {
-                appData = { students: DEFAULT_STUDENTS, lastResetKey: "" };
-                saveLocalData();
+        function render() {
+            renderActive();
+            renderRoster();
+            renderStats();
+            renderAdminList();
+        }
+
+        function renderStats() {
+            const c = appData.students.filter(s => s.status === 'confirmed').length;
+            const p = appData.students.filter(s => s.status === 'pending').length;
+            const a = appData.students.filter(s => s.status === 'absent').length;
+            document.getElementById("stats").innerHTML = `<span>🟢 ${c}</span> <span>🟡 ${p}</span> <span>🔴 ${a}</span>`;
+            document.getElementById("rosterCount").textContent = `${appData.students.length} Friends`;
+        }
+
+        function renderActive() {
+            const box = document.getElementById("activeUserBox");
+            const user = appData.students.find(s => s.id === activeId);
+            if (!user) {
+                box.innerHTML = `<div class="glass rounded-xl p-4 text-center text-xs text-neutral-400">Select your profile card below & enter PIN to unlock updates.</div>`;
+                return;
+            }
+            box.innerHTML = `
+                <div class="glass rounded-xl p-4 space-y-3">
+                    <div class="flex items-center justify-between border-b border-neutral-800 pb-2.5">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-white text-black font-bold flex items-center justify-center text-xs">${getInitials(user.name)}</div>
+                            <div><span class="font-bold text-sm">${user.name}</span> <span class="text-[9px] text-white bg-neutral-800 px-1.5 py-0.5 rounded ml-1">Unlocked</span></div>
+                        </div>
+                        <button onclick="logout()" class="text-xs text-neutral-400 hover:text-white"><i class="fa-solid fa-right-from-bracket mr-1"></i>Switch</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-xs font-bold">
+                        <button onclick="setStatus('${user.id}','confirmed')" class="py-2.5 rounded-lg border ${user.status === 'confirmed' ? 'bg-white text-black border-white' : 'glass-btn text-neutral-300'}">Going 🟢</button>
+                        <button onclick="setStatus('${user.id}','pending')" class="py-2.5 rounded-lg border ${user.status === 'pending' ? 'bg-white text-black border-white' : 'glass-btn text-neutral-300'}">Pending 🟡</button>
+                        <button onclick="setStatus('${user.id}','absent')" class="py-2.5 rounded-lg border ${user.status === 'absent' ? 'bg-white text-black border-white' : 'glass-btn text-neutral-300'}">Not Going 🔴</button>
+                    </div>
+                </div>`;
+        }
+
+        function renderRoster() {
+            const grid = document.getElementById("rosterGrid");
+            grid.innerHTML = "";
+            appData.students.forEach(s => {
+                const isA = s.id === activeId;
+                const badge = s.status === 'confirmed' ? '🟢 Going' : (s.status === 'absent' ? '🔴 Not Going' : '🟡 Pending');
+                const card = document.createElement("div");
+                card.className = `glass rounded-xl p-3 flex items-center justify-between cursor-pointer ${isA ? 'border-white' : ''}`;
+                card.onclick = () => {
+                    if (isA) return;
+                    selectedId = s.id;
+                    document.getElementById("pinUserName").textContent = s.name;
+                    document.getElementById("pinUserInitials").textContent = getInitials(s.name);
+                    document.getElementById("pinInput").value = "";
+                    document.getElementById("pinErr").classList.add("hidden");
+                    openM("pinModal");
+                };
+                card.innerHTML = `
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg ${isA ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-200'} font-bold flex items-center justify-center text-xs">${getInitials(s.name)}</div>
+                        <span class="text-xs font-bold">${s.name}</span>
+                    </div>
+                    <span class="text-xs font-semibold">${badge}</span>`;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderAdminList() {
+            const list = document.getElementById("adminList");
+            list.innerHTML = "";
+            appData.students.forEach(s => {
+                const item = document.createElement("div");
+                item.className = "flex items-center justify-between p-2 rounded bg-neutral-900 border border-neutral-800";
+                item.innerHTML = `<span>${s.name} (PIN: ••••)</span><button onclick="delStudent('${s.id}')" class="text-red-400 font-bold"><i class="fa-solid fa-trash"></i></button>`;
+                list.appendChild(item);
+            });
+        }
+
+        function handlePinSubmit(e) {
+            e.preventDefault();
+            const pin = document.getElementById("pinInput").value.trim();
+            const st = appData.students.find(s => s.id === selectedId);
+            if (st && st.pin === pin) {
+                activeId = st.id;
+                sessionStorage.setItem("active_id", activeId);
+                closeM("pinModal");
+                render();
+            } else { document.getElementById("pinErr").classList.remove("hidden"); }
+        }
+
+        function setStatus(id, st) {
+            const s = appData.students.find(x => x.id === id);
+            if (s) { s.status = st; pushData(); render(); }
+        }
+
+        function logout() { activeId = null; sessionStorage.removeItem("active_id"); render(); }
+
+        function handleAdminAuth(e) {
+            e.preventDefault();
+            if (document.getElementById("adminPass").value.trim() === ADMIN_PASS) {
+                closeM("adminAuthModal");
+                document.getElementById("adminDbUrl").value = getDbUrl();
+                openM("adminPanelModal");
+                renderAdminList();
+            } else { document.getElementById("adminErr").classList.remove("hidden"); }
+        }
+
+        function saveAdminDbUrl() {
+            localStorage.setItem("db_url", document.getElementById("adminDbUrl").value.trim() || DEFAULT_URL);
+            initDb();
+            alert("DB URL saved & reconnected!");
+        }
+
+        function handleAddStudent(e) {
+            e.preventDefault();
+            const n = document.getElementById("newName").value.trim(), p = document.getElementById("newPin").value.trim();
+            if (n && p.length === 4) {
+                appData.students.push({ id: "s-" + Date.now(), name: n, pin: p, status: "pending" });
+                pushData(); render();
+                document.getElementById("newName").value = ""; document.getElementById("newPin").value = "";
             }
         }
 
-        function saveLocalData() {
-            localStorage.setItem("attendance_app_data", JSON.stringify(appData));
+        function delStudent(id) {
+            if (confirm("Delete profile?")) {
+                appData.students = appData.students.filter(s => s.id !== id);
+                if (activeId === id) logout();
+                pushData(); render();
+            }
         }
 
-        function setupFirebaseSync() {
-            const dbUrl = localStorage.getItem("attendance_db_url");
-            const badge = document.getElementById("syncStatusBadge");
+        function forceReset() {
+            if (confirm("Reset all statuses to Pending?")) {
+                appData.students.forEach(s => s.status = "pending");
+                pushData(); render(); closeModal("adminPanelModal");
+            }
+        }
 
-            if (!dbUrl || dbUrl.trim() === "") {
-                syncMode = "local";
-                badge.textContent = "Local";
-                badge.className = "text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-800 text
+        function openM(id) { document.getElementById(id).classList.remove("hidden"); }
+        function closeM(id) { document.getElementById(id).classList.add("hidden"); }
+        function getInitials(n) { const p = n.trim().split(" "); return p.length >= 2 ? (p[0][0] + p[1][0]).toUpperCase() : p[0].slice(0, 2).toUpperCase(); }
+    </script>
+</body>
+</html>
