@@ -253,8 +253,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const syncDot = document.getElementById("syncDot");
   const syncErr = document.getElementById("syncErr");
 
-  // DEFAULT FIREBASE URL CONFIGURATION
-  const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.firebaseio.com";
+  // UPDATED DEFAULT REGIONAL FIREBASE URL CONFIGURATION
+  const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.asia-southeast1.firebasedatabase.app/";
   
   if (!localStorage.getItem("frienzo_db_url")) {
     localStorage.setItem("frienzo_db_url", DEFAULT_DB_URL);
@@ -309,9 +309,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         return;
       }
-      if (!url.startsWith("https://") || !url.endsWith(".firebaseio.com")) {
+      if (!url.startsWith("https://") || !url.includes("firebasedatabase.app")) {
         if (syncErr) {
-          syncErr.textContent = "URL should look like: https://your-app-default-rtdb.firebaseio.com";
+          syncErr.textContent = "URL should look like: https://your-app-default-rtdb.asia-southeast1.firebasedatabase.app/";
           syncErr.classList.remove("hidden");
         }
         return;
