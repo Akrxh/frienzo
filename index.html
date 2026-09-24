@@ -64,7 +64,7 @@ body {
 .foot-note { text-align: center; color: var(--mu2); font-size: .7rem; margin: 2rem 0 0; line-height: 1.5; }
 
 .glass { background: rgba(26,26,28,.92); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.7); }
-.inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); }
+.inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); margin-bottom: 0.75rem; }
 .inp:focus { border-color: rgba(255,255,255,.55); }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 999px; font: 600 0.9rem var(--f); background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; touch-action: manipulation; transition: opacity 0.2s; }
@@ -74,9 +74,14 @@ body {
 .btn.ghost { background: rgba(255,255,255,0.08); border-color: var(--line); color: #fff; }
 .btn.ghost:hover { background: rgba(255,255,255,0.15); }
 
+.btn.danger { background: rgba(255,60,60,0.2); border-color: rgba(255,60,60,0.4); color: #ff8080; }
+.btn.danger:hover { background: rgba(255,60,60,0.3); }
+
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 50; }
 .modal.top { align-items: flex-start; padding-top: max(8vh, env(safe-area-inset-top, 0px)); }
 .modal.show { display: flex; }
+
+.admin-account-item { display: flex; flex-direction: column; gap: 0.5rem; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 1rem; padding: 0.85rem; margin-bottom: 0.75rem; }
 </style>
 </head>
 <body>
@@ -148,7 +153,21 @@ body {
         <h2 class="text-lg font-semibold">Admin Panel</h2>
         <button class="btn ghost" data-close="adminModal" type="button">Close</button>
       </div>
-      <div id="adminContent"></div>
+
+      <!-- Add Account Section -->
+      <div class="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+        <h3 class="font-semibold text-sm mb-3">Add New Account</h3>
+        <input id="newAccName" class="inp" type="text" placeholder="Full Name" autocomplete="off">
+        <input id="newAccUser" class="inp" type="text" placeholder="Username (e.g. john)" autocomplete="off">
+        <input id="newAccPin" class="inp" type="password" inputmode="numeric" maxlength="4" placeholder="4-Digit PIN Code" autocomplete="off">
+        <button id="addAccBtn" class="btn w-full mt-1">Add Account</button>
+      </div>
+
+      <!-- Manage Accounts Section -->
+      <div>
+        <h3 class="font-semibold text-sm mb-3">Manage Existing Accounts</h3>
+        <div id="adminAccountsList"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -163,6 +182,50 @@ document.addEventListener("DOMContentLoaded", () => {
   const today = new Date();
   if (dayNameEl) dayNameEl.textContent = days[today.getDay()];
   if (dayDateEl) dayDateEl.textContent = today.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+
+  // Default Mock Roster if none exists
+  const DEFAULT_ACCOUNTS = [
+    { id: "user1", name: "Alex Turner", pin: "1234" },
+    { id: "user2", name: "Jessica Smith", pin: "5678" }
+  ];
+
+  if (!localStorage.getItem("frienzo_accounts")) {
+    localStorage.setItem("frienzo_accounts", JSON.stringify(DEFAULT_ACCOUNTS));
+  }
+
+  function getAccounts() {
+    try {
+      return JSON.parse(localStorage.getItem("frienzo_accounts")) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveAccounts(accounts) {
+    localStorage.setItem("frienzo_accounts", JSON.stringify(accounts));
+    renderRoster();
+    renderAdminAccounts();
+  }
+
+  function renderRoster() {
+    const rosterEl = document.getElementById("roster");
+    const rosterCountEl = document.getElementById("rosterCount");
+    const accounts = getAccounts();
+    if (rosterCountEl) rosterCountEl.textContent = `${accounts.length} members`;
+    if (rosterEl) {
+      rosterEl.innerHTML = accounts.length ? accounts.map(acc => `
+        <div class="row">
+          <div class="av">${acc.name.charAt(0)}</div>
+          <div class="wt">
+            <span class="nm">${acc.name}</span>
+            <span class="sb">@${acc.id}</span>
+          </div>
+        </div>
+      `).join('') : '<p class="text-sm text-slate-400 text-center py-4">No accounts found.</p>';
+    }
+  }
+
+  renderRoster();
 
   // Helper function to safely close all modals
   function closeAllModals() {
@@ -295,12 +358,114 @@ document.addEventListener("DOMContentLoaded", () => {
         if (adminGate) adminGate.classList.add("hidden");
         if (adminPanel) adminPanel.classList.remove("hidden");
         adminPass.value = "";
+        renderAdminAccounts();
       } else {
         if (adminErr) {
           adminErr.textContent = "Incorrect passcode.";
           adminErr.classList.remove("hidden");
         }
       }
+    });
+  }
+
+  // Render Admin Management List
+  function renderAdminAccounts() {
+    const listEl = document.getElementById("adminAccountsList");
+    if (!listEl) return;
+    const accounts = getAccounts();
+    
+    listEl.innerHTML = accounts.map(acc => `
+      <div class="admin-account-item" data-id="${acc.id}">
+        <div class="flex justify-between items-center">
+          <span class="font-semibold text-sm">${acc.name}</span>
+          <span class="text-xs text-slate-400">@${acc.id}</span>
+        </div>
+        <div class="flex gap-2 mt-1">
+          <input type="text" class="inp !mb-0 text-xs py-1 px-2 rename-input" value="${acc.name}" placeholder="New name">
+          <button class="btn ghost text-xs py-1 px-3 rename-btn">Rename</button>
+        </div>
+        <div class="flex gap-2 mt-1">
+          <input type="password" inputmode="numeric" maxlength="4" class="inp !mb-0 text-xs py-1 px-2 pin-input" placeholder="New 4-digit PIN">
+          <button class="btn ghost text-xs py-1 px-3 pin-btn">Change PIN</button>
+        </div>
+        <div class="flex justify-end mt-1">
+          <button class="btn danger text-xs py-1 px-3 remove-btn">Remove Account</button>
+        </div>
+      </div>
+    `).join('');
+
+    // Attach Event Listeners for Dynamic Account Actions
+    listEl.querySelectorAll(".admin-account-item").forEach(item => {
+      const id = item.getAttribute("data-id");
+
+      // Rename
+      item.querySelector(".rename-btn").addEventListener("click", () => {
+        const newName = item.querySelector(".rename-input").value.trim();
+        if (!newName) return alert("Name cannot be empty.");
+        const accounts = getAccounts();
+        const target = accounts.find(a => a.id === id);
+        if (target) {
+          target.name = newName;
+          saveAccounts(accounts);
+          alert("Account renamed successfully!");
+        }
+      });
+
+      // Change PIN
+      item.querySelector(".pin-btn").addEventListener("click", () => {
+        const newPin = item.querySelector(".pin-input").value.trim();
+        if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
+          return alert("Please enter a valid 4-digit PIN.");
+        }
+        const accounts = getAccounts();
+        const target = accounts.find(a => a.id === id);
+        if (target) {
+          target.pin = newPin;
+          saveAccounts(accounts);
+          alert("PIN changed successfully!");
+          item.querySelector(".pin-input").value = "";
+        }
+      });
+
+      // Remove Account
+      item.querySelector(".remove-btn").addEventListener("click", () => {
+        if (confirm("Are you sure you want to remove this account?")) {
+          let accounts = getAccounts();
+          accounts = accounts.filter(a => a.id !== id);
+          saveAccounts(accounts);
+        }
+      });
+    });
+  }
+
+  // Add Account Logic
+  const addAccBtn = document.getElementById("addAccBtn");
+  if (addAccBtn) {
+    addAccBtn.addEventListener("click", () => {
+      const name = document.getElementById("newAccName").value.trim();
+      const username = document.getElementById("newAccUser").value.trim().toLowerCase().replace(/\s+/g, '_');
+      const pin = document.getElementById("newAccPin").value.trim();
+
+      if (!name || !username || !pin) {
+        return alert("Please fill out all fields.");
+      }
+      if (pin.length !== 4 || isNaN(pin)) {
+        return alert("PIN must be exactly 4 digits.");
+      }
+
+      let accounts = getAccounts();
+      if (accounts.some(a => a.id === username)) {
+        return alert("Username already exists. Choose a different one.");
+      }
+
+      accounts.push({ id: username, name, pin });
+      saveAccounts(accounts);
+
+      // Clear fields
+      document.getElementById("newAccName").value = "";
+      document.getElementById("newAccUser").value = "";
+      document.getElementById("newAccPin").value = "";
+      alert("Account added successfully!");
     });
   }
 });
