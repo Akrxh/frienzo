@@ -11,7 +11,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink: #000;
   --tx: #fff;
   --mu: rgba(255,255,255,.58);
   --mu2: rgba(255,255,255,.4);
@@ -21,7 +20,7 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { min-height: 100%; overflow-x: hidden; }
+html, body { min-height: 100%; overflow-x: hidden; touch-action: manipulation; }
 
 body {
   margin: 0;
@@ -38,16 +37,14 @@ body {
 .top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
 
 .brand { display: flex; flex-direction: column; gap: .15rem; }
-.mark { font-size: 1.3rem; font-weight: 600; letter-spacing: -.04em; padding: 0; line-height: 1.1; background: none; border: 0; color: var(--tx); font-family: var(--f); cursor: default; }
+.mark { font-size: 1.3rem; font-weight: 600; letter-spacing: -.04em; padding: 0; line-height: 1.1; background: none; border: 0; color: var(--tx); font-family: var(--f); cursor: pointer; }
 .sub { margin: 0; font-size: .72rem; color: var(--mu2); letter-spacing: .03em; font-weight: 400; }
 
-.pill { display: flex; align-items: center; gap: .5rem; padding: .5rem .95rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .78rem var(--f); cursor: pointer; touch-action: manipulation; }
-.pill:hover { background: rgba(255,255,255,.15); }
-.pill:active { transform: scale(.96); }
+.pill { display: flex; align-items: center; gap: .5rem; padding: .5rem .95rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .78rem var(--f); cursor: pointer; user-select: none; }
+.pill:active { transform: scale(.95); background: rgba(255,255,255,.2); }
 
-.sd { width: .5rem; height: .5rem; border-radius: 50%; background: rgba(255,255,255,.3); transition: .2s; }
+.sd { width: .5rem; height: .5rem; border-radius: 50%; background: rgba(255,255,255,.3); }
 .sd.on { background: #fff; box-shadow: 0 0 10px #fff; }
-.sd.err { background: transparent; border: 1.5px solid #fff; }
 
 .hero { padding: 3.2rem 0 2.3rem; }
 .kicker { margin: 0; color: var(--mu); font-size: .68rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; }
@@ -63,23 +60,24 @@ body {
 
 .foot-note { text-align: center; color: var(--mu2); font-size: .7rem; margin: 2rem 0 0; line-height: 1.5; }
 
-.glass { background: rgba(26,26,28,.92); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.7); }
+.glass { background: rgba(26,26,28,.96); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.8); }
 .inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); margin-bottom: 0.75rem; }
 .inp:focus { border-color: rgba(255,255,255,.55); }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 999px; font: 600 0.9rem var(--f); background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; touch-action: manipulation; transition: opacity 0.2s; }
-.btn:hover { opacity: 0.9; }
-.btn:active { transform: scale(0.97); }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 999px; font: 600 0.9rem var(--f); background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; user-select: none; }
+.btn:active { transform: scale(0.96); opacity: 0.85; }
 
 .btn.ghost { background: rgba(255,255,255,0.08); border-color: var(--line); color: #fff; }
-.btn.ghost:hover { background: rgba(255,255,255,0.15); }
+.btn.ghost:active { background: rgba(255,255,255,0.2); }
 
 .btn.danger { background: rgba(255,60,60,0.2); border-color: rgba(255,60,60,0.4); color: #ff8080; }
-.btn.danger:hover { background: rgba(255,60,60,0.3); }
 
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 50; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.8); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 100; }
 .modal.top { align-items: flex-start; padding-top: max(8vh, env(safe-area-inset-top, 0px)); }
 .modal.show { display: flex; }
+
+.roster-item { cursor: pointer; transition: background 0.15s ease; border-radius: 1rem; padding: 0.5rem; margin: 0.15rem 0; }
+.roster-item:active { background: rgba(255,255,255,0.08); }
 
 .admin-account-item { display: flex; flex-direction: column; gap: 0.5rem; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 1rem; padding: 0.85rem; margin-bottom: 0.75rem; }
 </style>
@@ -88,12 +86,12 @@ body {
 <main class="wrap">
   <header class="top">
     <div class="brand">
-      <button id="logo" class="mark" type="button" tabindex="-1" aria-label="Frienzo">Frienzo</button>
+      <button id="logo" class="mark" type="button">Frienzo</button>
       <p class="sub">Made with love by Tryin'</p>
     </div>
     <div class="flex items-center gap-2">
       <button id="sessionToggleBtn" class="pill !bg-white/10" type="button">Check In</button>
-      <button id="syncBtn" class="pill" type="button" aria-label="Sync settings">
+      <button id="syncBtn" class="pill" type="button">
         <span id="syncDot" class="sd"></span>
         <span id="syncTxt">Sync</span>
       </button>
@@ -137,7 +135,7 @@ body {
   <div class="glass p-6 w-full max-w-md">
     <h2 class="text-lg font-semibold mb-1">Device sync</h2>
     <p class="text-slate-400 text-sm mb-4">Firebase Realtime Database URL for cross-device syncing.</p>
-    <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://frienzo-frnd-default-rtdb.asia-southeast1.firebasedatabase.app/" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://..." autocomplete="off">
     <p id="syncErr" class="text-xs mt-2 hidden" style="color:#ff8080"></p>
     <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
       <button id="syncClose" class="btn ghost" type="button">Close</button>
@@ -165,8 +163,6 @@ body {
         <h2 class="text-lg font-semibold">Admin Panel</h2>
         <button class="btn ghost" data-close="adminModal" type="button">Close</button>
       </div>
-
-      <!-- Add Account Section -->
       <div class="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
         <h3 class="font-semibold text-sm mb-3">Add New Account</h3>
         <input id="newAccName" class="inp" type="text" placeholder="Full Name" autocomplete="off">
@@ -174,8 +170,6 @@ body {
         <input id="newAccPin" class="inp" type="password" inputmode="numeric" maxlength="4" placeholder="4-Digit PIN Code" autocomplete="off">
         <button id="addAccBtn" class="btn w-full mt-1" type="button">Add Account</button>
       </div>
-
-      <!-- Manage Accounts Section -->
       <div>
         <h3 class="font-semibold text-sm mb-3">Manage Existing Accounts</h3>
         <div id="adminAccountsList"></div>
@@ -186,13 +180,10 @@ body {
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const dayNameEl = document.getElementById("dayName");
-  const dayDateEl = document.getElementById("dayDate");
-  
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const today = new Date();
-  if (dayNameEl) dayNameEl.textContent = days[today.getDay()];
-  if (dayDateEl) dayDateEl.textContent = today.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById("dayName").textContent = days[today.getDay()];
+  document.getElementById("dayDate").textContent = today.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
 
   const DEFAULT_ACCOUNTS = [
     { id: "user1", name: "Alex Turner", pin: "1234", status: "absent", time: "" },
@@ -200,15 +191,13 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.asia-southeast1.firebasedatabase.app/";
-
   if (!localStorage.getItem("frienzo_db_url")) {
     localStorage.setItem("frienzo_db_url", DEFAULT_DB_URL);
   }
 
   function getActiveDbUrl() {
     let url = localStorage.getItem("frienzo_db_url");
-    if (!url) return null;
-    return url.endsWith('/') ? url : url + '/';
+    return url ? (url.endsWith('/') ? url : url + '/') : null;
   }
 
   function getAccounts() {
@@ -257,10 +246,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data)) {
-          const localData = JSON.stringify(getAccounts());
-          const remoteData = JSON.stringify(data);
-          if (localData !== remoteData) {
-            localStorage.setItem("frienzo_accounts", remoteData);
+          if (JSON.stringify(getAccounts()) !== JSON.stringify(data)) {
+            localStorage.setItem("frienzo_accounts", JSON.stringify(data));
             renderUI();
           }
         }
@@ -285,29 +272,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const accounts = getAccounts();
 
     if (!loggedId) {
-      if (greetingEl) greetingEl.innerHTML = `<span class="text-amber-400">Not logged in.</span> Tap your name below to sign in.`;
-      if (toggleBtn) {
-        toggleBtn.textContent = "Sign In";
-        toggleBtn.onclick = () => {
-          // Open login modal for first user as default
-          if (accounts.length > 0) openLoginModal(accounts[0].id);
-        };
-      }
+      greetingEl.innerHTML = `<span class="text-amber-400">Not logged in.</span> Tap your name below to sign in.`;
+      toggleBtn.textContent = "Sign In";
+      toggleBtn.onclick = () => {
+        if (accounts.length > 0) openLoginModal(accounts[0].id);
+      };
     } else {
       const user = accounts.find(a => a.id === loggedId);
       if (user) {
         const isPresent = user.status === "present";
-        if (greetingEl) greetingEl.innerHTML = `Logged in as <b>${user.name}</b> — Status: <span class="${isPresent ? 'text-green-400' : 'text-slate-400'}">${isPresent ? 'Present (' + user.time + ')' : 'Absent'}</span>`;
-        if (toggleBtn) {
-          toggleBtn.textContent = isPresent ? "Check Out" : "Check In";
-          toggleBtn.onclick = async () => {
-            const newStatus = isPresent ? "absent" : "present";
-            const timeStr = isPresent ? "" : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            user.status = newStatus;
-            user.time = timeStr;
-            await saveAccounts(accounts);
-          };
-        }
+        greetingEl.innerHTML = `Logged in as <b>${user.name}</b> — Status: <span class="${isPresent ? 'text-green-400' : 'text-slate-400'}">${isPresent ? 'Present (' + user.time + ')' : 'Absent'}</span>`;
+        toggleBtn.textContent = isPresent ? "Check Out" : "Check In";
+        toggleBtn.onclick = async () => {
+          user.status = isPresent ? "absent" : "present";
+          user.time = isPresent ? "" : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          await saveAccounts(accounts);
+        };
       } else {
         setLoggedInUser(null);
       }
@@ -316,43 +296,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderRoster() {
     const rosterEl = document.getElementById("roster");
-    const rosterCountEl = document.getElementById("rosterCount");
     const accounts = getAccounts();
     const loggedId = getLoggedInUser();
 
-    if (rosterCountEl) rosterCountEl.textContent = `${accounts.length} members`;
-    if (rosterEl) {
-      rosterEl.innerHTML = accounts.length ? accounts.map(acc => {
-        const isPresent = acc.status === "present";
-        const isMe = acc.id === loggedId;
-        return `
-          <div class="row flex items-center justify-between py-3 border-b border-white/5 last:border-0 cursor-pointer roster-item" data-id="${acc.id}">
-            <div class="flex items-center gap-3">
-              <div class="av w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-semibold text-sm">${acc.name.charAt(0)}</div>
-              <div class="wt flex flex-col">
-                <span class="nm font-medium text-sm flex items-center gap-2">
-                  ${acc.name} ${isMe ? '<span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded text-white">You</span>' : ''}
-                </span>
-                <span class="sb text-xs text-slate-400">@${acc.id}</span>
-              </div>
-            </div>
-            <div>
-              <span class="text-xs px-2.5 py-1 rounded-full font-medium ${isPresent ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-white/5 text-slate-400 border border-white/10'}">
-                ${isPresent ? 'Present ' + (acc.time ? '· ' + acc.time : '') : 'Absent'}
+    document.getElementById("rosterCount").textContent = `${accounts.length} members`;
+    rosterEl.innerHTML = accounts.length ? accounts.map(acc => {
+      const isPresent = acc.status === "present";
+      const isMe = acc.id === loggedId;
+      return `
+        <div class="roster-item flex items-center justify-between py-3 border-b border-white/5 last:border-0" data-id="${acc.id}">
+          <div class="flex items-center gap-3 pointer-events-none">
+            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-semibold text-sm">${acc.name.charAt(0)}</div>
+            <div class="flex flex-col">
+              <span class="font-medium text-sm flex items-center gap-2">
+                ${acc.name} ${isMe ? '<span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded text-white">You</span>' : ''}
               </span>
+              <span class="text-xs text-slate-400">@${acc.id}</span>
             </div>
           </div>
-        `;
-      }).join('') : '<p class="text-sm text-slate-400 text-center py-4">No accounts found.</p>';
+          <div class="pointer-events-none">
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium ${isPresent ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-white/5 text-slate-400 border border-white/10'}">
+              ${isPresent ? 'Present ' + (acc.time ? '· ' + acc.time : '') : 'Absent'}
+            </span>
+          </div>
+        </div>
+      `;
+    }).join('') : '<p class="text-sm text-slate-400 text-center py-4">No accounts found.</p>';
 
-      // Click to log in or switch
-      rosterEl.querySelectorAll(".roster-item").forEach(item => {
-        item.addEventListener("click", () => {
-          const id = item.getAttribute("data-id");
-          openLoginModal(id);
-        });
+    // Robust touch & click handling for list elements
+    rosterEl.querySelectorAll(".roster-item").forEach(item => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        openLoginModal(item.getAttribute("data-id"));
       });
-    }
+    });
   }
 
   if (!localStorage.getItem("frienzo_accounts")) {
@@ -360,130 +337,133 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   renderUI();
 
-  // Login Modal Handling
   let targetLoginId = null;
   const loginModal = document.getElementById("loginModal");
   const loginPin = document.getElementById("loginPin");
   const loginErr = document.getElementById("loginErr");
-  const loginTitle = document.getElementById("loginTitle");
-  const loginGo = document.getElementById("loginGo");
 
   function openLoginModal(id) {
     targetLoginId = id;
-    const accounts = getAccounts();
-    const user = accounts.find(a => a.id === id);
-    if (user && loginTitle) loginTitle.textContent = `Login as ${user.name}`;
-    if (loginPin) loginPin.value = "";
-    if (loginErr) loginErr.classList.add("hidden");
+    const user = getAccounts().find(a => a.id === id);
+    if (user) document.getElementById("loginTitle").textContent = `Login as ${user.name}`;
+    loginPin.value = "";
+    loginErr.classList.add("hidden");
     closeAllModals();
-    if (loginModal) loginModal.classList.add("show");
-    if (loginPin) loginPin.focus();
+    loginModal.classList.add("show");
+    setTimeout(() => loginPin.focus(), 100);
   }
 
-  if (loginGo && loginPin) {
-    loginGo.addEventListener("click", () => {
-      const pin = loginPin.value.trim();
-      const accounts = getAccounts();
-      const user = accounts.find(a => a.id === targetLoginId);
-      if (user && user.pin === pin) {
-        setLoggedInUser(user.id);
-        if (loginModal) loginModal.classList.remove("show");
-      } else {
-        if (loginErr) {
-          loginErr.textContent = "Incorrect PIN code.";
-          loginErr.classList.remove("hidden");
-        }
-      }
-    });
-  }
+  document.getElementById("loginGo").addEventListener("click", () => {
+    const pin = loginPin.value.trim();
+    const accounts = getAccounts();
+    const user = accounts.find(a => a.id === targetLoginId);
+    if (user && user.pin === pin) {
+      setLoggedInUser(user.id);
+      loginModal.classList.remove("show");
+    } else {
+      loginErr.textContent = "Incorrect PIN code.";
+      loginErr.classList.remove("hidden");
+    }
+  });
 
   function closeAllModals() {
-    document.querySelectorAll(".modal").forEach(modal => {
-      modal.classList.remove("show");
-    });
+    document.querySelectorAll(".modal").forEach(m => m.classList.remove("show"));
   }
 
   document.querySelectorAll("[data-close]").forEach(btn => {
     btn.addEventListener("click", () => {
-      const modalId = btn.getAttribute("data-close");
-      const modal = document.getElementById(modalId);
-      if (modal) modal.classList.remove("show");
+      document.getElementById(btn.getAttribute("data-close")).classList.remove("show");
     });
   });
 
-  const syncBtn = document.getElementById("syncBtn");
   const syncModal = document.getElementById("syncModal");
-  const syncClose = document.getElementById("syncClose");
-  const syncOff = document.getElementById("syncOff");
-  const syncSave = document.getElementById("syncSave");
   const dbUrlInput = document.getElementById("dbUrl");
   const syncTxt = document.getElementById("syncTxt");
   const syncDot = document.getElementById("syncDot");
-  const syncErr = document.getElementById("syncErr");
 
   const savedUrl = localStorage.getItem("frienzo_db_url") || "";
   if (savedUrl) {
-    if (dbUrlInput) dbUrlInput.value = savedUrl;
-    if (syncTxt) syncTxt.textContent = "Synced";
-    if (syncDot) {
-      syncDot.classList.remove("err");
-      syncDot.classList.add("on");
+    dbUrlInput.value = savedUrl;
+    syncTxt.textContent = "Synced";
+    syncDot.classList.add("on");
+  }
+
+  document.getElementById("syncBtn").addEventListener("click", () => {
+    closeAllModals();
+    syncModal.classList.add("show");
+  });
+
+  document.getElementById("syncClose").addEventListener("click", () => syncModal.classList.remove("show"));
+  document.getElementById("syncOff").addEventListener("click", () => {
+    localStorage.removeItem("frienzo_db_url");
+    dbUrlInput.value = "";
+    syncTxt.textContent = "Local";
+    syncDot.classList.remove("on");
+    syncModal.classList.remove("show");
+  });
+
+  document.getElementById("syncSave").addEventListener("click", async () => {
+    const url = dbUrlInput.value.trim();
+    if (!url || !url.startsWith("https://")) {
+      const err = document.getElementById("syncErr");
+      err.textContent = "Enter a valid Firebase URL starting with https://";
+      err.classList.remove("hidden");
+      return;
     }
-  }
-
-  if (syncBtn && syncModal) {
-    syncBtn.addEventListener("click", () => {
-      closeAllModals();
-      syncModal.classList.add("show");
-    });
-  }
-
-  if (syncClose) {
-    syncClose.addEventListener("click", () => {
-      syncModal.classList.remove("show");
-    });
-  }
-
-  if (syncOff) {
-    syncOff.addEventListener("click", () => {
-      localStorage.removeItem("frienzo_db_url");
-      if (dbUrlInput) dbUrlInput.value = "";
-      if (syncTxt) syncTxt.textContent = "Local";
-      if (syncDot) syncDot.classList.remove("on", "err");
-      syncModal.classList.remove("show");
-    });
-  }
-
-  if (syncSave) {
-    syncSave.addEventListener("click", async () => {
-      const url = dbUrlInput ? dbUrlInput.value.trim() : "";
-      if (!url) {
-        if (syncErr) {
-          syncErr.textContent = "Please enter a valid Firebase URL.";
-          syncErr.classList.remove("hidden");
-        }
-        return;
-      }
-      if (!url.startsWith("https://") || (!url.includes("firebaseio.com") && !url.includes("firebasedatabase.app"))) {
-        if (syncErr) {
-          syncErr.textContent = "URL should look like: https://your-app-default-rtdb.asia-southeast1.firebasedatabase.app/";
-          syncErr.classList.remove("hidden");
-        }
-        return;
-      }
-      
-      if (syncErr) syncErr.classList.add("hidden");
-      localStorage.setItem("frienzo_db_url", url);
-      if (syncTxt) syncTxt.textContent = "Synced";
-      if (syncDot) {
-        syncDot.classList.remove("err");
-        syncDot.classList.add("on");
-      }
-      syncModal.classList.remove("show");
-      await pullFromCloud();
-    });
-  }
+    localStorage.setItem("frienzo_db_url", url);
+    syncTxt.textContent = "Synced";
+    syncDot.classList.add("on");
+    syncModal.classList.remove("show");
+    await pullFromCloud();
+  });
 
   let logoClicks = 0;
-  const logo = document.getElementById("logo");
-  cons
+  document.getElementById("logo").addEventListener("click", () => {
+    logoClicks++;
+    if (logoClicks >= 5) {
+      logoClicks = 0;
+      closeAllModals();
+      document.getElementById("adminModal").classList.add("show");
+    }
+  });
+
+  document.getElementById("adminGo").addEventListener("click", () => {
+    const pass = document.getElementById("adminPass").value.trim();
+    if (pass === "260885") {
+      document.getElementById("adminErr").classList.add("hidden");
+      document.getElementById("adminGate").classList.add("hidden");
+      document.getElementById("adminPanel").classList.remove("hidden");
+      document.getElementById("adminPass").value = "";
+      renderAdminAccounts();
+    } else {
+      const err = document.getElementById("adminErr");
+      err.textContent = "Incorrect passcode.";
+      err.classList.remove("hidden");
+    }
+  });
+
+  function renderAdminAccounts() {
+    const listEl = document.getElementById("adminAccountsList");
+    const accounts = getAccounts();
+    listEl.innerHTML = accounts.map(acc => `
+      <div class="admin-account-item" data-id="${acc.id}">
+        <div class="flex justify-between items-center">
+          <span class="font-semibold text-sm">${acc.name}</span>
+          <span class="text-xs text-slate-400">@${acc.id} (PIN: ${acc.pin})</span>
+        </div>
+        <div class="flex gap-2 mt-1">
+          <input type="text" class="inp !mb-0 text-xs py-1 px-2 rename-input" value="${acc.name}">
+          <button class="btn ghost text-xs py-1 px-3 rename-btn" type="button">Rename</button>
+        </div>
+        <div class="flex gap-2 mt-1">
+          <input type="password" inputmode="numeric" maxlength="4" class="inp !mb-0 text-xs py-1 px-2 pin-input" placeholder="New PIN">
+          <button class="btn ghost text-xs py-1 px-3 pin-btn" type="button">Change PIN</button>
+        </div>
+        <div class="flex justify-end mt-1">
+          <button class="btn danger text-xs py-1 px-3 remove-btn" type="button">Remove Account</button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll(".admin-account-item").forEach(item => {
+      const id
