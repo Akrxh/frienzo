@@ -67,7 +67,6 @@ body {
 .inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); }
 .inp:focus { border-color: rgba(255,255,255,.55); }
 
-/* Standardized, fully responsive normal buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 999px; font: 600 0.9rem var(--f); background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; touch-action: manipulation; transition: opacity 0.2s; }
 .btn:hover { opacity: 0.9; }
 .btn:active { transform: scale(0.97); }
@@ -75,7 +74,6 @@ body {
 .btn.ghost { background: rgba(255,255,255,0.08); border-color: var(--line); color: #fff; }
 .btn.ghost:hover { background: rgba(255,255,255,0.15); }
 
-/* Modals */
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 50; }
 .modal.top { align-items: flex-start; padding-top: max(8vh, env(safe-area-inset-top, 0px)); }
 .modal.show { display: flex; }
@@ -192,7 +190,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const syncDot = document.getElementById("syncDot");
   const syncErr = document.getElementById("syncErr");
 
-  // Load saved sync state on startup
+  // DEFAULT FIREBASE URL CONFIGURATION
+  const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.firebaseio.com";
+  
+  // Check if saved value exists in localStorage; otherwise set default automatically
+  if (!localStorage.getItem("frienzo_db_url")) {
+    localStorage.setItem("frienzo_db_url", DEFAULT_DB_URL);
+  }
+
   const savedUrl = localStorage.getItem("frienzo_db_url") || "";
   if (savedUrl) {
     if (dbUrlInput) dbUrlInput.value = savedUrl;
