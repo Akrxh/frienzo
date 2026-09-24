@@ -17,17 +17,11 @@
   --mu2: rgba(255,255,255,.4);
   --line: rgba(255,255,255,.14);
   --line2: rgba(255,255,255,.26);
-  --go: #fff;
-  --pe: rgba(255,255,255,.62);
-  --ou: rgba(255,255,255,.36);
   --f: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif;
-  --spec: inset 0 1px 0 rgba(255,255,255,.4), inset 0 -1px 0 rgba(255,255,255,.07), inset 0 0 24px rgba(255,255,255,.035);
-  --gshadow: 0 14px 44px rgba(0,0,0,.55), var(--spec);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { min-height: 100%; overflow-x: hidden; }
-html { scroll-padding-top: env(safe-area-inset-top, 0px); }
 
 body {
   margin: 0;
@@ -36,7 +30,6 @@ body {
   background: #000;
   -webkit-font-smoothing: antialiased;
   background-image: radial-gradient(720px 500px at 50% -14%, rgba(255,255,255,.14), transparent 70%);
-  background-attachment: scroll;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -48,7 +41,7 @@ body {
 .mark { font-size: 1.3rem; font-weight: 600; letter-spacing: -.04em; padding: 0; line-height: 1.1; background: none; border: 0; color: var(--tx); font-family: var(--f); cursor: default; }
 .sub { margin: 0; font-size: .72rem; color: var(--mu2); letter-spacing: .03em; font-weight: 400; }
 
-.pill { display: flex; align-items: center; gap: .5rem; padding: .5rem .95rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .78rem var(--f); cursor: pointer; box-shadow: var(--spec), 0 6px 20px rgba(0,0,0,.35); transition: background .25s, transform .15s; touch-action: manipulation; }
+.pill { display: flex; align-items: center; gap: .5rem; padding: .5rem .95rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .78rem var(--f); cursor: pointer; touch-action: manipulation; }
 .pill:hover { background: rgba(255,255,255,.15); }
 .pill:active { transform: scale(.96); }
 
@@ -56,104 +49,36 @@ body {
 .sd.on { background: #fff; box-shadow: 0 0 10px #fff; }
 .sd.err { background: transparent; border: 1.5px solid #fff; }
 
-.hero { padding: 3.2rem 0 2.3rem; animation: rise .8s cubic-bezier(.2,.8,.2,1) both; }
+.hero { padding: 3.2rem 0 2.3rem; }
 .kicker { margin: 0; color: var(--mu); font-size: .68rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; }
 
 .day { font-family: var(--f); font-weight: 600; font-size: clamp(3.2rem, 16vw, 5.2rem); line-height: .98; letter-spacing: -.05em; margin: .4rem 0 .5rem; color: #fff; }
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .day { background: linear-gradient(180deg, #fff 30%, rgba(255,255,255,.55)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-}
+.date { margin: 0; color: var(--mu); font-size: 1rem; font-weight: 400; }
 
-.date { margin: 0; color: var(--mu); font-size: 1rem; font-weight: 400; letter-spacing: -.01em; }
-.bar { display: flex; gap: 4px; height: .3rem; margin-top: 2rem; border-radius: 999px; overflow: hidden; }
-.seg { display: block; border-radius: 999px; min-width: 6px; transition: flex .5s cubic-bezier(.3,.9,.3,1); }
-.seg.going { background: #fff; box-shadow: 0 0 14px rgba(255,255,255,.4); }
-.seg.pending { background: rgba(255,255,255,.42); }
-.seg.out { background: rgba(255,255,255,.14); }
-.seg.empty { background: rgba(255,255,255,.1); }
-
-.card { position: relative; background: rgba(255,255,255,.045); border: 1px solid var(--line); border-radius: 1.9rem; padding: 1.2rem; margin-bottom: 1rem; box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 20px 50px rgba(0,0,0,.4); }
-
-.who, .invite { display: flex; align-items: center; gap: .8rem; }
-.who { margin-bottom: 1.05rem; }
-.invite { padding: .35rem .2rem; }
-.invite i { font-size: 1.5rem; color: #fff; }
-
-.av { width: 2.5rem; height: 2.5rem; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-weight: 600; color: #fff; border: 1px solid rgba(255,255,255,.12); font-size: .86rem; }
-.av.lg { width: 3.2rem; height: 3.2rem; font-size: 1.02rem; box-shadow: 0 8px 24px rgba(0,0,0,.5), var(--spec); }
-
-.wt, .rt { flex: 1; min-width: 0; }
-.nm { display: block; font-weight: 600; letter-spacing: -.015em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sb { display: block; color: var(--mu); font-size: .78rem; margin-top: 1px; }
-
-.ghost-sm { flex-shrink: 0; display: flex; align-items: center; gap: .4rem; padding: .55rem .85rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.09); color: var(--tx); font: 500 .76rem var(--f); cursor: pointer; box-shadow: var(--spec); transition: background .2s, transform .15s; touch-action: manipulation; }
-.ghost-sm:hover { background: rgba(255,255,255,.16); }
-.ghost-sm:active { transform: scale(.96); }
-
-.seg3 { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 1.7rem; background: rgba(255,255,255,.06); border: 1px solid var(--line); }
-.seg3 button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: .34rem; padding: .9rem .2rem; background: none; border: 0; color: var(--mu); font: 600 .8rem var(--f); cursor: pointer; transition: color .25s; touch-action: manipulation; }
-.seg3 button i { font-size: 1.15rem; }
-.seg3 button.on { color: #fff; }
-.seg3[data-v=going] button.on { color: #000; }
-
-.thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px)/3); border-radius: 1.4rem; transition: transform .45s cubic-bezier(.32,1.15,.4,1), background .3s, box-shadow .3s; }
-.seg3[data-v=going] .thumb { transform: translateX(0); background: #fff; box-shadow: 0 6px 28px rgba(255,255,255,.35); }
-.seg3[data-v=pending] .thumb { transform: translateX(100%); background: rgba(255,255,255,.22); box-shadow: var(--spec), 0 0 0 1px rgba(255,255,255,.3); }
-.seg3[data-v=out] .thumb { transform: translateX(200%); background: rgba(0,0,0,.6); box-shadow: inset 0 0 0 1px rgba(255,255,255,.4); }
+.card { position: relative; background: rgba(255,255,255,.045); border: 1px solid var(--line); border-radius: 1.9rem; padding: 1.2rem; margin-bottom: 1rem; }
 
 .rh { padding: .2rem .3rem .9rem; display: flex; align-items: baseline; justify-content: space-between; }
 .rh h2 { margin: 0; font-family: var(--f); font-weight: 600; letter-spacing: -.03em; font-size: 1.3rem; }
 .rh span { color: var(--mu); font-size: .78rem; }
 
-.row { position: relative; width: 100%; display: flex; align-items: center; gap: .8rem; padding: .85rem .3rem; margin-bottom: 0; border: 0; border-bottom: 1px solid rgba(255,255,255,.07); border-radius: 0; background: transparent; color: inherit; text-align: left; font-family: var(--f); cursor: pointer; touch-action: manipulation; }
-.row:last-child { border-bottom: 0; }
-.row:hover { background: rgba(255,255,255,.035); }
-.row:active { transform: scale(.985); }
-.row.out .nm { color: var(--mu); }
-.row.me { background: rgba(255,255,255,.09); border-radius: 1.2rem; border-bottom-color: transparent; padding-left: .7rem; padding-right: .7rem; box-shadow: inset 0 1px 0 rgba(255,255,255,.25); cursor: default; }
-.row.me .sb { color: #fff; }
-
-.chip { display: inline-flex; align-items: center; gap: .4rem; flex-shrink: 0; white-space: nowrap; padding: .3rem .65rem; border-radius: 999px; font-size: .68rem; font-weight: 600; border: 1px solid; }
-.chip.going { color: #000; background: #fff; border-color: #fff; }
-.chip.pending { color: #fff; background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.3); }
-.chip.out { color: rgba(255,255,255,.55); background: transparent; border-color: rgba(255,255,255,.22); border-style: dashed; }
-
 .foot-note { text-align: center; color: var(--mu2); font-size: .7rem; margin: 2rem 0 0; line-height: 1.5; }
 
-.glass { background: rgba(26,26,28,.86); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.7), var(--spec); }
-.inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); box-shadow: inset 0 2px 6px rgba(0,0,0,.35); transition: border-color .2s, box-shadow .2s; }
-.inp::placeholder { color: rgba(255,255,255,.35); }
-.inp:focus { border-color: rgba(255,255,255,.55); box-shadow: inset 0 2px 6px rgba(0,0,0,.35), 0 0 0 4px rgba(255,255,255,.1); }
+.glass { background: rgba(26,26,28,.92); border: 1px solid var(--line2); border-radius: 2rem; box-shadow: 0 30px 90px rgba(0,0,0,.7); }
+.inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 1.1rem; padding: .85rem 1rem; color: #fff; outline: none; font: 500 1rem var(--f); }
+.inp:focus { border-color: rgba(255,255,255,.55); }
 
-.btn { padding: .85rem 1.2rem; border-radius: 999px; font: 600 .92rem var(--f); background: rgba(255,255,255,.2); color: #fff; border: 1px solid rgba(255,255,255,.34); cursor: pointer; box-shadow: var(--spec), 0 8px 24px rgba(0,0,0,.3); transition: transform .15s, background .2s; touch-action: manipulation; }
-.btn:hover { background: rgba(255,255,255,.28); }
-.btn:active { transform: scale(.97); }
-.btn.ghost { background: rgba(255,255,255,.07); border-color: var(--line); color: rgba(255,255,255,.85); box-shadow: var(--spec); }
-.btn.ghost:hover { background: rgba(255,255,255,.13); }
+/* Standardized, fully responsive normal buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; border-radius: 999px; font: 600 0.9rem var(--f); background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; touch-action: manipulation; transition: opacity 0.2s; }
+.btn:hover { opacity: 0.9; }
+.btn:active { transform: scale(0.97); }
 
-/* PIN entry */
-.pinwrap { position: relative; display: flex; justify-content: center; gap: .85rem; margin: 1.5rem 0 .4rem; cursor: text; }
-.pd { width: 3.1rem; height: 3.6rem; border-radius: 1.2rem; border: 1px solid var(--line2); background: rgba(255,255,255,.07); display: grid; place-items: center; box-shadow: inset 0 2px 8px rgba(0,0,0,.35); }
-.pd::after { content: ""; width: .72rem; height: .72rem; border-radius: 50%; background: #fff; box-shadow: 0 0 14px rgba(255,255,255,.8); transform: scale(0); transition: transform .18s cubic-bezier(.3,1.6,.5,1); }
-.pd.f::after { transform: scale(1); }
-.pin-real { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; background: transparent; color: transparent; font-size: 16px; caret-color: transparent; text-align: center; }
+.btn.ghost { background: rgba(255,255,255,0.08); border-color: var(--line); color: #fff; }
+.btn.ghost:hover { background: rgba(255,255,255,0.15); }
 
-/* Modals: Hidden by default to prevent stacking issues */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 50; }
+/* Modals */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 50; }
 .modal.top { align-items: flex-start; padding-top: max(8vh, env(safe-area-inset-top, 0px)); }
 .modal.show { display: flex; }
-
-.summary { display: block; margin-top: 1.8rem; }
-.lg { display: flex; align-items: center; gap: .7rem; padding: .8rem 0; border-bottom: 1px solid rgba(255,255,255,.08); font-size: .86rem; color: var(--mu); }
-.lg:first-child { border-top: 1px solid rgba(255,255,255,.08); }
-.lg:last-child { border-bottom: 0; }
-.lg b { margin-left: auto; color: #fff; font-weight: 500; font-size: 1.25rem; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.mk { width: .55rem; height: .55rem; border-radius: 50%; flex-shrink: 0; }
-.mk.go { background: #fff; box-shadow: 0 0 8px rgba(255,255,255,.6); }
-.mk.pe { border: 1.5px solid rgba(255,255,255,.75); background: linear-gradient(90deg, rgba(255,255,255,.75) 50%, transparent 50%); }
-.mk.ou { border: 1.5px dashed rgba(255,255,255,.4); }
-
-@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 </style>
 </head>
 <body>
@@ -191,30 +116,16 @@ body {
 
 <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 glass px-4 py-2 text-sm text-center max-w-[90vw] hidden z-[60]"></div>
 
-<!-- Password modal: native numeric keyboard -->
-<div id="pinModal" class="modal top">
-  <div class="glass p-6 w-full max-w-xs text-center">
-    <div id="pinAv" class="av lg mx-auto mb-3"></div>
-    <div id="pinName" class="font-semibold text-lg"></div>
-    <p id="pinMsg" class="text-slate-400 text-sm mt-1">Type your 4-digit password</p>
-    <div id="pinWrap" class="pinwrap">
-      <span class="pd"></span><span class="pd"></span><span class="pd"></span><span class="pd"></span>
-      <input id="pinInput" class="pin-real" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" enterkeyhint="done" aria-label="4-digit password">
-    </div>
-    <button id="pinCancel" class="text-slate-400 text-sm mt-4 p-2" type="button">Cancel</button>
-  </div>
-</div>
-
 <!-- Sync modal -->
 <div id="syncModal" class="modal top">
   <div class="glass p-6 w-full max-w-md">
     <h2 class="text-lg font-semibold mb-1">Device sync</h2>
     <p class="text-slate-400 text-sm mb-4">Paste your Firebase Realtime Database URL so this device shows the same statuses as everyone else. Choose "This device only" to keep data on this phone.</p>
     <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://your-project-default-rtdb.firebaseio.com" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <p id="syncErr" class="text-xs mt-2 hidden" style="color:#fff"></p>
+    <p id="syncErr" class="text-xs mt-2 hidden" style="color:#ff8080"></p>
     <p class="text-slate-500 text-xs mt-2">In Firebase, set the database rules to allow read and write on <code>attendance</code>.</p>
     <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
-      <button id="syncClose" class="btn ghost" data-close="syncModal" type="button">Close</button>
+      <button id="syncClose" class="btn ghost" type="button">Close</button>
       <button id="syncOff" class="btn ghost" type="button">This device only</button>
       <button id="syncSave" class="btn" type="button">Connect</button>
     </div>
@@ -228,7 +139,7 @@ body {
       <h2 class="text-lg font-semibold mb-1">Admin access</h2>
       <p class="text-slate-400 text-sm mb-4">Enter the admin passcode.</p>
       <input id="adminPass" type="password" inputmode="numeric" class="inp" placeholder="Passcode" autocomplete="off">
-      <p id="adminErr" class="text-xs mt-2 hidden" style="color:#fff"></p>
+      <p id="adminErr" class="text-xs mt-2 hidden" style="color:#ff8080"></p>
       <div class="flex gap-2 mt-4 justify-end">
         <button class="btn ghost" data-close="adminModal" type="button">Cancel</button>
         <button id="adminGo" class="btn" type="button">Unlock</button>
@@ -255,14 +166,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if (dayNameEl) dayNameEl.textContent = days[today.getDay()];
   if (dayDateEl) dayDateEl.textContent = today.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
 
-  // Helper function to safely close all modals before opening any new one
+  // Helper function to safely close all modals
   function closeAllModals() {
     document.querySelectorAll(".modal").forEach(modal => {
       modal.classList.remove("show");
     });
   }
 
-  // Handle modal closing via data-close attributes
+  // Handle modal closing via general close buttons / attributes
   document.querySelectorAll("[data-close]").forEach(btn => {
     btn.addEventListener("click", () => {
       const modalId = btn.getAttribute("data-close");
@@ -271,9 +182,28 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Sync modal trigger
   const syncBtn = document.getElementById("syncBtn");
   const syncModal = document.getElementById("syncModal");
+  const syncClose = document.getElementById("syncClose");
+  const syncOff = document.getElementById("syncOff");
+  const syncSave = document.getElementById("syncSave");
+  const dbUrlInput = document.getElementById("dbUrl");
+  const syncTxt = document.getElementById("syncTxt");
+  const syncDot = document.getElementById("syncDot");
+  const syncErr = document.getElementById("syncErr");
+
+  // Load saved sync state on startup
+  const savedUrl = localStorage.getItem("frienzo_db_url") || "";
+  if (savedUrl) {
+    if (dbUrlInput) dbUrlInput.value = savedUrl;
+    if (syncTxt) syncTxt.textContent = "Synced";
+    if (syncDot) {
+      syncDot.classList.remove("err");
+      syncDot.classList.add("on");
+    }
+  }
+
+  // Open Sync Modal
   if (syncBtn && syncModal) {
     syncBtn.addEventListener("click", () => {
       closeAllModals();
@@ -281,7 +211,57 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Logo / Admin trigger click handler (multi-tap)
+  // Close Sync Modal
+  if (syncClose) {
+    syncClose.addEventListener("click", () => {
+      syncModal.classList.remove("show");
+    });
+  }
+
+  // "This device only" button handler
+  if (syncOff) {
+    syncOff.addEventListener("click", () => {
+      localStorage.removeItem("frienzo_db_url");
+      if (dbUrlInput) dbUrlInput.value = "";
+      if (syncTxt) syncTxt.textContent = "This device";
+      if (syncDot) {
+        syncDot.classList.remove("on", "err");
+      }
+      syncModal.classList.remove("show");
+    });
+  }
+
+  // "Connect" button handler
+  if (syncSave) {
+    syncSave.addEventListener("click", () => {
+      const url = dbUrlInput ? dbUrlInput.value.trim() : "";
+      if (!url) {
+        if (syncErr) {
+          syncErr.textContent = "Please enter a valid Firebase URL.";
+          syncErr.classList.remove("hidden");
+        }
+        return;
+      }
+      if (!url.startsWith("https://") || !url.endsWith(".firebaseio.com")) {
+        if (syncErr) {
+          syncErr.textContent = "URL should look like: https://your-app-default-rtdb.firebaseio.com";
+          syncErr.classList.remove("hidden");
+        }
+        return;
+      }
+      
+      if (syncErr) syncErr.classList.add("hidden");
+      localStorage.setItem("frienzo_db_url", url);
+      if (syncTxt) syncTxt.textContent = "Synced";
+      if (syncDot) {
+        syncDot.classList.remove("err");
+        syncDot.classList.add("on");
+      }
+      syncModal.classList.remove("show");
+    });
+  }
+
+  // Logo / Admin trigger click handler (multi-tap 5 times)
   let logoClicks = 0;
   const logo = document.getElementById("logo");
   const adminModal = document.getElementById("adminModal");
