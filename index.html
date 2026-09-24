@@ -91,45 +91,57 @@ body {
       <button id="logo" class="mark" type="button" tabindex="-1" aria-label="Frienzo">Frienzo</button>
       <p class="sub">Made with love by Tryin'</p>
     </div>
-    <button id="syncBtn" class="pill" type="button" aria-label="Sync settings">
-      <span id="syncDot" class="sd"></span>
-      <span id="syncTxt">This device</span>
-    </button>
+    <div class="flex items-center gap-2">
+      <button id="sessionToggleBtn" class="pill !bg-white/10" type="button">Check In</button>
+      <button id="syncBtn" class="pill" type="button" aria-label="Sync settings">
+        <span id="syncDot" class="sd"></span>
+        <span id="syncTxt">Sync</span>
+      </button>
+    </div>
   </header>
 
   <section class="hero">
-    <p class="kicker">Attendance for</p>
+    <p class="kicker">Attendance Status</p>
     <h1 id="dayName" class="day"></h1>
     <p id="dayDate" class="date"></p>
-    <div id="summary" class="summary"></div>
+    <div id="userGreeting" class="mt-4 text-sm text-slate-300"></div>
   </section>
-
-  <section id="session" class="card"></section>
 
   <section class="card">
     <div class="rh">
-      <h2>Class roster</h2>
+      <h2>Class roster & Status</h2>
       <span id="rosterCount"></span>
     </div>
     <div id="roster"></div>
   </section>
 
-  <p id="resetInfo" class="foot-note"></p>
+  <p id="resetInfo" class="foot-note">Tap any account in the roster to log in with your PIN code.</p>
 </main>
 
-<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 glass px-4 py-2 text-sm text-center max-w-[90vw] hidden z-[60]"></div>
+<!-- Login Modal -->
+<div id="loginModal" class="modal">
+  <div class="glass p-6 w-full max-w-sm">
+    <h2 id="loginTitle" class="text-lg font-semibold mb-1">Member Login</h2>
+    <p class="text-slate-400 text-sm mb-4">Enter your 4-digit code to log in.</p>
+    <input id="loginPin" type="password" inputmode="numeric" maxlength="4" class="inp" placeholder="4-Digit PIN" autocomplete="off">
+    <p id="loginErr" class="text-xs mt-2 hidden" style="color:#ff8080"></p>
+    <div class="flex gap-2 mt-4 justify-end">
+      <button class="btn ghost" data-close="loginModal" type="button">Cancel</button>
+      <button id="loginGo" class="btn" type="button">Login</button>
+    </div>
+  </div>
+</div>
 
 <!-- Sync modal -->
 <div id="syncModal" class="modal top">
   <div class="glass p-6 w-full max-w-md">
     <h2 class="text-lg font-semibold mb-1">Device sync</h2>
-    <p class="text-slate-400 text-sm mb-4">Paste your Firebase Realtime Database URL so this device shows the same data as everyone else. Choose "This device only" to keep data isolated locally.</p>
+    <p class="text-slate-400 text-sm mb-4">Firebase Realtime Database URL for cross-device syncing.</p>
     <input id="dbUrl" class="inp" type="url" inputmode="url" placeholder="https://frienzo-frnd-default-rtdb.asia-southeast1.firebasedatabase.app/" autocomplete="off" autocapitalize="off" spellcheck="false">
     <p id="syncErr" class="text-xs mt-2 hidden" style="color:#ff8080"></p>
-    <p class="text-slate-500 text-xs mt-2">In Firebase, ensure your database rules allow read and write access.</p>
     <div class="flex flex-col-reverse sm:flex-row gap-2 mt-5 sm:justify-end">
       <button id="syncClose" class="btn ghost" type="button">Close</button>
-      <button id="syncOff" class="btn ghost" type="button">This device only</button>
+      <button id="syncOff" class="btn ghost" type="button">Local only</button>
       <button id="syncSave" class="btn" type="button">Connect</button>
     </div>
   </div>
@@ -183,8 +195,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (dayDateEl) dayDateEl.textContent = today.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
 
   const DEFAULT_ACCOUNTS = [
-    { id: "user1", name: "Alex Turner", pin: "1234" },
-    { id: "user2", name: "Jessica Smith", pin: "5678" }
+    { id: "user1", name: "Alex Turner", pin: "1234", status: "absent", time: "" },
+    { id: "user2", name: "Jessica Smith", pin: "5678", status: "absent", time: "" }
   ];
 
   const DEFAULT_DB_URL = "https://frienzo-frnd-default-rtdb.asia-southeast1.firebasedatabase.app/";
@@ -207,10 +219,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function getLoggedInUser() {
+    return localStorage.getItem("frienzo_logged_in") || null;
+  }
+
+  function setLoggedInUser(id) {
+    if (id) localStorage.setItem("frienzo_logged_in", id);
+    else localStorage.removeItem("frienzo_logged_in");
+    renderUI();
+  }
+
   async function saveAccounts(accounts) {
     localStorage.setItem("frienzo_accounts", JSON.stringify(accounts));
-    renderRoster();
-    renderAdminAccounts();
+    renderUI();
     await pushToCloud(accounts);
   }
 
@@ -224,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify(accounts)
       });
     } catch (e) {
-      console.error("Cloud sync push error:", e);
+      console.error("Cloud push error:", e);
     }
   }
 
@@ -240,42 +261,141 @@ document.addEventListener("DOMContentLoaded", () => {
           const remoteData = JSON.stringify(data);
           if (localData !== remoteData) {
             localStorage.setItem("frienzo_accounts", remoteData);
-            renderRoster();
-            renderAdminAccounts();
+            renderUI();
           }
         }
       }
     } catch (e) {
-      console.error("Cloud sync pull error:", e);
+      console.error("Cloud pull error:", e);
     }
   }
 
-  // Initial pull and periodic poll for live cross-device sync
   pullFromCloud();
   setInterval(pullFromCloud, 5000);
+
+  function renderUI() {
+    renderRoster();
+    renderHeaderGreeting();
+  }
+
+  function renderHeaderGreeting() {
+    const greetingEl = document.getElementById("userGreeting");
+    const toggleBtn = document.getElementById("sessionToggleBtn");
+    const loggedId = getLoggedInUser();
+    const accounts = getAccounts();
+
+    if (!loggedId) {
+      if (greetingEl) greetingEl.innerHTML = `<span class="text-amber-400">Not logged in.</span> Tap your name below to sign in.`;
+      if (toggleBtn) {
+        toggleBtn.textContent = "Sign In";
+        toggleBtn.onclick = () => {
+          // Open login modal for first user as default
+          if (accounts.length > 0) openLoginModal(accounts[0].id);
+        };
+      }
+    } else {
+      const user = accounts.find(a => a.id === loggedId);
+      if (user) {
+        const isPresent = user.status === "present";
+        if (greetingEl) greetingEl.innerHTML = `Logged in as <b>${user.name}</b> — Status: <span class="${isPresent ? 'text-green-400' : 'text-slate-400'}">${isPresent ? 'Present (' + user.time + ')' : 'Absent'}</span>`;
+        if (toggleBtn) {
+          toggleBtn.textContent = isPresent ? "Check Out" : "Check In";
+          toggleBtn.onclick = async () => {
+            const newStatus = isPresent ? "absent" : "present";
+            const timeStr = isPresent ? "" : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            user.status = newStatus;
+            user.time = timeStr;
+            await saveAccounts(accounts);
+          };
+        }
+      } else {
+        setLoggedInUser(null);
+      }
+    }
+  }
 
   function renderRoster() {
     const rosterEl = document.getElementById("roster");
     const rosterCountEl = document.getElementById("rosterCount");
     const accounts = getAccounts();
+    const loggedId = getLoggedInUser();
+
     if (rosterCountEl) rosterCountEl.textContent = `${accounts.length} members`;
     if (rosterEl) {
-      rosterEl.innerHTML = accounts.length ? accounts.map(acc => `
-        <div class="row flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
-          <div class="av w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-semibold text-sm">${acc.name.charAt(0)}</div>
-          <div class="wt flex flex-col">
-            <span class="nm font-medium text-sm">${acc.name}</span>
-            <span class="sb text-xs text-slate-400">@${acc.id}</span>
+      rosterEl.innerHTML = accounts.length ? accounts.map(acc => {
+        const isPresent = acc.status === "present";
+        const isMe = acc.id === loggedId;
+        return `
+          <div class="row flex items-center justify-between py-3 border-b border-white/5 last:border-0 cursor-pointer roster-item" data-id="${acc.id}">
+            <div class="flex items-center gap-3">
+              <div class="av w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-semibold text-sm">${acc.name.charAt(0)}</div>
+              <div class="wt flex flex-col">
+                <span class="nm font-medium text-sm flex items-center gap-2">
+                  ${acc.name} ${isMe ? '<span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded text-white">You</span>' : ''}
+                </span>
+                <span class="sb text-xs text-slate-400">@${acc.id}</span>
+              </div>
+            </div>
+            <div>
+              <span class="text-xs px-2.5 py-1 rounded-full font-medium ${isPresent ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-white/5 text-slate-400 border border-white/10'}">
+                ${isPresent ? 'Present ' + (acc.time ? '· ' + acc.time : '') : 'Absent'}
+              </span>
+            </div>
           </div>
-        </div>
-      `).join('') : '<p class="text-sm text-slate-400 text-center py-4">No accounts found.</p>';
+        `;
+      }).join('') : '<p class="text-sm text-slate-400 text-center py-4">No accounts found.</p>';
+
+      // Click to log in or switch
+      rosterEl.querySelectorAll(".roster-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const id = item.getAttribute("data-id");
+          openLoginModal(id);
+        });
+      });
     }
   }
 
   if (!localStorage.getItem("frienzo_accounts")) {
     localStorage.setItem("frienzo_accounts", JSON.stringify(DEFAULT_ACCOUNTS));
   }
-  renderRoster();
+  renderUI();
+
+  // Login Modal Handling
+  let targetLoginId = null;
+  const loginModal = document.getElementById("loginModal");
+  const loginPin = document.getElementById("loginPin");
+  const loginErr = document.getElementById("loginErr");
+  const loginTitle = document.getElementById("loginTitle");
+  const loginGo = document.getElementById("loginGo");
+
+  function openLoginModal(id) {
+    targetLoginId = id;
+    const accounts = getAccounts();
+    const user = accounts.find(a => a.id === id);
+    if (user && loginTitle) loginTitle.textContent = `Login as ${user.name}`;
+    if (loginPin) loginPin.value = "";
+    if (loginErr) loginErr.classList.add("hidden");
+    closeAllModals();
+    if (loginModal) loginModal.classList.add("show");
+    if (loginPin) loginPin.focus();
+  }
+
+  if (loginGo && loginPin) {
+    loginGo.addEventListener("click", () => {
+      const pin = loginPin.value.trim();
+      const accounts = getAccounts();
+      const user = accounts.find(a => a.id === targetLoginId);
+      if (user && user.pin === pin) {
+        setLoggedInUser(user.id);
+        if (loginModal) loginModal.classList.remove("show");
+      } else {
+        if (loginErr) {
+          loginErr.textContent = "Incorrect PIN code.";
+          loginErr.classList.remove("hidden");
+        }
+      }
+    });
+  }
 
   function closeAllModals() {
     document.querySelectorAll(".modal").forEach(modal => {
@@ -328,10 +448,8 @@ document.addEventListener("DOMContentLoaded", () => {
     syncOff.addEventListener("click", () => {
       localStorage.removeItem("frienzo_db_url");
       if (dbUrlInput) dbUrlInput.value = "";
-      if (syncTxt) syncTxt.textContent = "This device";
-      if (syncDot) {
-        syncDot.classList.remove("on", "err");
-      }
+      if (syncTxt) syncTxt.textContent = "Local";
+      if (syncDot) syncDot.classList.remove("on", "err");
       syncModal.classList.remove("show");
     });
   }
@@ -368,124 +486,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let logoClicks = 0;
   const logo = document.getElementById("logo");
-  const adminModal = document.getElementById("adminModal");
-  if (logo && adminModal) {
-    logo.addEventListener("click", () => {
-      logoClicks++;
-      if (logoClicks >= 5) {
-        logoClicks = 0;
-        closeAllModals();
-        adminModal.classList.add("show");
-      }
-    });
-  }
-
-  const adminGo = document.getElementById("adminGo");
-  const adminPass = document.getElementById("adminPass");
-  const adminErr = document.getElementById("adminErr");
-  const adminGate = document.getElementById("adminGate");
-  const adminPanel = document.getElementById("adminPanel");
-
-  if (adminGo && adminPass) {
-    adminGo.addEventListener("click", () => {
-      const enteredPass = adminPass.value.trim();
-      if (enteredPass === "260885") {
-        if (adminErr) adminErr.classList.add("hidden");
-        if (adminGate) adminGate.classList.add("hidden");
-        if (adminPanel) adminPanel.classList.remove("hidden");
-        adminPass.value = "";
-        renderAdminAccounts();
-      } else {
-        if (adminErr) {
-          adminErr.textContent = "Incorrect passcode.";
-          adminErr.classList.remove("hidden");
-        }
-      }
-    });
-  }
-
-  function renderAdminAccounts() {
-    const listEl = document.getElementById("adminAccountsList");
-    if (!listEl) return;
-    const accounts = getAccounts();
-    
-    listEl.innerHTML = accounts.map(acc => `
-      <div class="admin-account-item" data-id="${acc.id}">
-        <div class="flex justify-between items-center">
-          <span class="font-semibold text-sm">${acc.name}</span>
-          <span class="text-xs text-slate-400">@${acc.id}</span>
-        </div>
-        <div class="flex gap-2 mt-1">
-          <input type="text" class="inp !mb-0 text-xs py-1 px-2 rename-input" value="${acc.name}" placeholder="New name">
-          <button class="btn ghost text-xs py-1 px-3 rename-btn" type="button">Rename</button>
-        </div>
-        <div class="flex gap-2 mt-1">
-          <input type="password" inputmode="numeric" maxlength="4" class="inp !mb-0 text-xs py-1 px-2 pin-input" placeholder="New 4-digit PIN">
-          <button class="btn ghost text-xs py-1 px-3 pin-btn" type="button">Change PIN</button>
-        </div>
-        <div class="flex justify-end mt-1">
-          <button class="btn danger text-xs py-1 px-3 remove-btn" type="button">Remove Account</button>
-        </div>
-      </div>
-    `).join('');
-
-    listEl.querySelectorAll(".admin-account-item").forEach(item => {
-      const id = item.getAttribute("data-id");
-
-      item.querySelector(".rename-btn").addEventListener("click", async () => {
-        const newName = item.querySelector(".rename-input").value.trim();
-        if (!newName) return alert("Name cannot be empty.");
-        let accounts = getAccounts();
-        const target = accounts.find(a => a.id === id);
-        if (target) {
-          target.name = newName;
-          await saveAccounts(accounts);
-          alert("Account renamed successfully!");
-        }
-      });
-
-      item.querySelector(".pin-btn").addEventListener("click", async () => {
-        const newPin = item.querySelector(".pin-input").value.trim();
-        if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
-          return alert("Please enter a valid 4-digit PIN.");
-        }
-        let accounts = getAccounts();
-        const target = accounts.find(a => a.id === id);
-        if (target) {
-          target.pin = newPin;
-          await saveAccounts(accounts);
-          alert("PIN changed successfully!");
-          item.querySelector(".pin-input").value = "";
-        }
-      });
-
-      item.querySelector(".remove-btn").addEventListener("click", async () => {
-        if (confirm("Are you sure you want to remove this account?")) {
-          let accounts = getAccounts();
-          accounts = accounts.filter(a => a.id !== id);
-          await saveAccounts(accounts);
-        }
-      });
-    });
-  }
-
-  const addAccBtn = document.getElementById("addAccBtn");
-  if (addAccBtn) {
-    addAccBtn.addEventListener("click", async () => {
-      const name = document.getElementById("newAccName").value.trim();
-      const username = document.getElementById("newAccUser").value.trim().toLowerCase().replace(/\s+/g, '_');
-      const pin = document.getElementById("newAccPin").value.trim();
-
-      if (!name || !username || !pin) {
-        return alert("Please fill out all fields.");
-      }
-      if (pin.length !== 4 || isNaN(pin)) {
-        return alert("PIN must be exactly 4 digits.");
-      }
-
-      let accounts = getAccounts();
-      if (accounts.some(a => a.id === username)) {
-        return alert("Username already exists. Choose a different one.");
-      }
-
-      accounts.pus
+  cons
